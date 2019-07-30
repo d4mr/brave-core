@@ -14,6 +14,7 @@ import("//brave/components/gemini/browser/buildflags/buildflags.gni")
 import("//brave/components/greaselion/browser/buildflags/buildflags.gni")
 import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//brave/components/moonpay/browser/buildflags/buildflags.gni")
+import("//brave/components/playlists/buildflags.gni")
 import("//brave/components/speedreader/buildflags.gni")
 import("//brave/components/tor/buildflags/buildflags.gni")
 import("//build/buildflag_header.gni")
@@ -311,6 +312,15 @@ source_set("browser_process") {
       "//brave/components/moonpay/browser",
       "//brave/components/moonpay/common",
     ]
+  }
+
+  if (playlists_enabled) {
+    sources += [
+      "playlists/playlists_service_factory.cc",
+      "playlists/playlists_service_factory.h",
+    ]
+
+    deps += [ "//brave/components/playlists/browser" ]
   }
 
   if (enable_tor) {
