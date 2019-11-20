@@ -832,6 +832,7 @@ if (!is_android) {
     if (playlists_enabled) {
        sources += [
         "//brave/browser/playlists/playlists_browsertest.cc",
+        "//brave/browser/extensions/brave_playlists_apitest.cc",
       ]
     }
 
