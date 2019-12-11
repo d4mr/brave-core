@@ -4,6 +4,7 @@ import("//brave/components/brave_rewards/browser/buildflags/buildflags.gni")
 import("//brave/components/brave_wallet/buildflags/buildflags.gni")
 import("//brave/components/brave_wayback_machine/buildflags/buildflags.gni")
 import("//brave/components/ipfs/buildflags/buildflags.gni")
+import("//brave/components/playlists/buildflags.gni")
 import("//brave/components/speedreader/buildflags.gni")
 import("//brave/components/tor/buildflags/buildflags.gni")
 import("//build/config/features.gni")
@@ -376,6 +377,13 @@ source_set("ui") {
       "webui/brave_wallet_ui.h",
     ]
     deps += [ "//brave/components/brave_wallet_ui:generated_resources" ]
+  }
+
+  if (playlists_enabled) {
+    sources += [
+      "webui/brave_playlists_source.cc",
+      "webui/brave_playlists_source.h",
+    ]
   }
 
   if (toolkit_views) {
