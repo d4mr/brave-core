@@ -13,12 +13,14 @@
 #include "brave/components/brave_sync/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/browser/features.h"
+#include "brave/components/playlists/browser/features.h"
 #include "brave/components/speedreader/buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/blink/public/common/features.h"
 
+using brave_playlists::features::kBravePlaylists;
 using brave_shields::features::kBraveAdblockCosmeticFiltering;
 using ntp_background_images::features::kBraveNTPBrandedWallpaper;
 using ntp_background_images::features::kBraveNTPBrandedWallpaperDemo;
@@ -89,7 +91,12 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
     {"brave-ephemeral-storage",                                            \
      flag_descriptions::kBraveEphemeralStorageName,                        \
      flag_descriptions::kBraveEphemeralStorageDescription, kOsAll,         \
-     FEATURE_VALUE_TYPE(blink::features::kBraveEphemeralStorage)},
+     FEATURE_VALUE_TYPE(blink::features::kBraveEphemeralStorage)},         \
+    {"brave-playlists",                                                    \
+     flag_descriptions::kBravePlaylistsName,                               \
+     flag_descriptions::kBravePlaylistsDescription,                        \
+     flags_ui::kOsMac | flags_ui::kOsWin | flags_ui::kOsLinux,             \
+     FEATURE_VALUE_TYPE(kBravePlaylists)},
 
 #define SetFeatureEntryEnabled SetFeatureEntryEnabled_ChromiumImpl
 #include "../../../../chrome/browser/about_flags.cc"  // NOLINT

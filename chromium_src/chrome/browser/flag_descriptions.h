@@ -29,6 +29,8 @@ extern const char kBraveSuperReferralName[];
 extern const char kBraveSuperReferralDescription[];
 extern const char kBraveEphemeralStorageName[];
 extern const char kBraveEphemeralStorageDescription[];
+extern const char kBravePlaylistsName[];
+extern const char kBravePlaylistsDescription[];
 }  // namespace flag_descriptions
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_FLAG_DESCRIPTIONS_H_
