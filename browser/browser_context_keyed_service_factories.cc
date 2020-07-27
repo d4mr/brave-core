@@ -16,6 +16,11 @@
 #include "brave/components/greaselion/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
+#include "extensions/buildflags/buildflags.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "brave/browser/extensions/api/playlist/brave_playlists_event_router.h"
+#endif
 
 #if BUILDFLAG(ENABLE_GREASELION)
 #include "brave/browser/greaselion/greaselion_service_factory.h"
@@ -60,6 +65,10 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   BookmarkPrefsServiceFactory::GetInstance();
 #else
   ntp_background_images::NTPBackgroundImagesBridgeFactory::GetInstance();
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  brave_playlists::BravePlaylistsEventRouter::GetFactoryInstance();
 #endif
 
 #if BUILDFLAG(BRAVE_WALLET_ENABLED)
