@@ -18,7 +18,7 @@
 #include "brave/components/brave_wallet/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/ipfs/features.h"
-#include "brave/components/playlists/browser/buildflags/buildflags.h"
+#include "brave/components/playlist/browser/buildflags/buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
@@ -46,9 +46,9 @@
 #include "brave/browser/ui/webui/ipfs_ui.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
-#include "brave/browser/ui/webui/brave_playlists_ui.h"
-#include "brave/components/playlists/browser/features.h"
+#if BUILDFLAG(ENABLE_PLAYLIST)
+#include "brave/browser/ui/webui/playlist_ui.h"
+#include "brave/components/playlist/browser/features.h"
 #endif
 
 using content::WebUI;
@@ -84,13 +84,12 @@ WebUIController* NewWebUI<BasicUI>(WebUI* web_ui, const GURL& url) {
   } else if (host == kWalletHost) {
     return new BraveWalletUI(web_ui, url.host());
 #endif  // BUILDFLAG(BRAVE_WALLET_ENABLED)
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
+#if BUILDFLAG(ENABLE_PLAYLIST)
   } else if (host == kPlaylistsHost) {
-    if (base::FeatureList::IsEnabled(
-        brave_playlists::features::kBravePlaylists)) {
-      return new brave_playlists::BravePlaylistsUI(web_ui, url.host());
+    if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
+      return new playlist::PlaylistUI(web_ui, url.host());
     }
-#endif  // BUILDFLAG(BRAVE_PLAYLISTS_ENABLED)
+#endif  // BUILDFLAG(PLAYLIST_ENABLED)
 #if BUILDFLAG(BRAVE_REWARDS_ENABLED)
   } else if (host == kRewardsPageHost) {
     return new BraveRewardsPageUI(web_ui, url.host());
@@ -131,7 +130,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui, const GURL& url) {
       url.host_piece() == kRewardsInternalsHost ||
       url.host_piece() == kTipHost ||
 #endif
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
+#if BUILDFLAG(ENABLE_PLAYLIST)
       url.host_piece() == kPlaylistsHost ||
 #endif
       url.host_piece() == kWelcomeHost ||

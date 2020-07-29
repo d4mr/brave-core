@@ -28,7 +28,7 @@
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/l10n/browser/locale_helper.h"
 #include "brave/components/l10n/common/locale_util.h"
-#include "brave/components/playlists/browser/buildflags/buildflags.h"
+#include "brave/components/playlist/browser/buildflags/buildflags.h"
 #include "brave/components/speedreader/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -105,8 +105,8 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
-#include "brave/components/playlists/common/pref_names.h"
+#if BUILDFLAG(ENABLE_PLAYLIST)
+#include "brave/components/playlist/common/pref_names.h"
 #endif
 
 using extensions::FeatureSwitch;
@@ -340,8 +340,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   brave_ads::RegisterP2APrefs(registry);
 #endif
 
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
-  registry->RegisterDictionaryPref(brave_playlists::kBravePlaylistItems);
+#if BUILDFLAG(ENABLE_PLAYLIST)
+  registry->RegisterDictionaryPref(playlist::kPlaylistItems);
 #endif
 
   RegisterProfilePrefsForMigration(registry);

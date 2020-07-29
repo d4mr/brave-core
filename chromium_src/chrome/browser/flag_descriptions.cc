@@ -40,8 +40,6 @@ const char kBraveSuperReferralDescription[] =
 const char kBraveEphemeralStorageName[] = "Enable Ephemeral Storage";
 const char kBraveEphemeralStorageDescription[] =
     "Use ephemeral storage for third-party frames";
-const char kBravePlaylistsName[] =
-    "Playlists";
-const char kBravePlaylistsDescription[] =
-    "Download web videos for later viewing.";
+const char kPlaylistName[] = "Playlist";
+const char kPlaylistDescription[] = "Download web videos for later viewing.";
 }  // namespace flag_descriptions
