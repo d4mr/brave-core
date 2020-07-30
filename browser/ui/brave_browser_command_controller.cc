@@ -15,7 +15,7 @@
 #include "brave/components/brave_rewards/browser/buildflags/buildflags.h"
 #include "brave/components/brave_sync/buildflags/buildflags.h"
 #include "brave/components/brave_wallet/buildflags/buildflags.h"
-#include "brave/components/playlists/browser/buildflags/buildflags.h"
+#include "brave/components/playlist/buildflags/buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -123,8 +123,8 @@ void BraveBrowserCommandController::InitBraveCommandState() {
 #if BUILDFLAG(ENABLE_TOR)
   UpdateCommandForTor();
 #endif
-#if BUILDFLAG(ENABLE_BRAVE_PLAYLISTS)
-  UpdateCommandForBravePlaylists();
+#if BUILDFLAG(ENABLE_PLAYLIST)
+  UpdateCommandForPlaylist();
 #endif
   UpdateCommandEnabled(IDC_ADD_NEW_PROFILE, !is_guest_session);
   UpdateCommandEnabled(IDC_OPEN_GUEST_PROFILE, !is_guest_session);
@@ -161,8 +161,8 @@ void BraveBrowserCommandController::UpdateCommandForBraveWallet() {
   UpdateCommandEnabled(IDC_SHOW_BRAVE_WALLET, true);
 }
 
-void BraveBrowserCommandController::UpdateCommandForBravePlaylists() {
-  UpdateCommandEnabled(IDC_SHOW_BRAVE_PLAYLISTS, true);
+void BraveBrowserCommandController::UpdateCommandForPlaylist() {
+  UpdateCommandEnabled(IDC_SHOW_PLAYLIST, true);
 }
 
 bool BraveBrowserCommandController::ExecuteBraveCommandWithDisposition(
@@ -213,8 +213,8 @@ bool BraveBrowserCommandController::ExecuteBraveCommandWithDisposition(
     case IDC_SHOW_BRAVE_WALLET:
       brave::ShowBraveWallet(browser_);
       break;
-    case IDC_SHOW_BRAVE_PLAYLISTS:
-      brave::ShowBravePlaylists(browser_);
+    case IDC_SHOW_PLAYLIST:
+      brave::ShowPlaylist(browser_);
       break;
     case IDC_ADD_NEW_PROFILE:
       brave::AddNewProfile();
