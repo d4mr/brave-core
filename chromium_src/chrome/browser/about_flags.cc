@@ -14,6 +14,7 @@
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/browser/features.h"
 #include "brave/components/playlist/browser/features.h"
+#include "brave/components/playlist/buildflags/buildflags.h"
 #include "brave/components/speedreader/buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -32,6 +33,17 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
       channel != version_info::Channel::UNKNOWN) {                         \
     return true;                                                           \
   }
+
+#if BUILDFLAG(ENABLE_PLAYLIST)
+#define PLAYLIST_FEATURE_ENTRIES                                           \
+     {"playlist",                                                          \
+     flag_descriptions::kPlaylistName,                                     \
+     flag_descriptions::kPlaylistDescription,                              \
+     flags_ui::kOsMac | flags_ui::kOsWin | flags_ui::kOsLinux,             \
+     FEATURE_VALUE_TYPE(playlist::features::kPlaylist)},
+#else
+#define PLAYLIST_FEATURE_ENTRIES
+#endif
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
 #include "brave/components/speedreader/features.h"
@@ -98,11 +110,7 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
      flag_descriptions::kBraveEphemeralStorageName,                        \
      flag_descriptions::kBraveEphemeralStorageDescription, kOsAll,         \
      FEATURE_VALUE_TYPE(blink::features::kBraveEphemeralStorage)},         \
-    {"playlist",                                                           \
-     flag_descriptions::kPlaylistName,                                     \
-     flag_descriptions::kPlaylistDescription,                              \
-     flags_ui::kOsMac | flags_ui::kOsWin | flags_ui::kOsLinux,             \
-     FEATURE_VALUE_TYPE(playlist::features::kPlaylist)},                   \
+    PLAYLIST_FEATURE_ENTRIES                                               \
 
 #define SetFeatureEntryEnabled SetFeatureEntryEnabled_ChromiumImpl
 #include "../../../../chrome/browser/about_flags.cc"  // NOLINT
