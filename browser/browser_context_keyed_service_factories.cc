@@ -15,10 +15,10 @@
 #include "brave/components/brave_wallet/buildflags/buildflags.h"
 #include "brave/components/greaselion/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
+#include "brave/components/playlist/buildflags/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
-#include "extensions/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PLAYLIST)
 #include "brave/browser/extensions/api/playlist/playlist_event_router.h"
 #endif
 
@@ -67,7 +67,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ntp_background_images::NTPBackgroundImagesBridgeFactory::GetInstance();
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_PLAYLIST)
   playlist::PlaylistEventRouter::GetFactoryInstance();
 #endif
 
