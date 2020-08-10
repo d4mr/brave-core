@@ -5,6 +5,7 @@ index 8459d9d4007e5e7a879a2888634c28ff3dc71bd7..761254387ba1e5966366484071abf058
 @@ -483,6 +483,20 @@ enum HistogramValue {
    WINDOWS_ON_BOUNDS_CHANGED = 461,
    WALLPAPER_PRIVATE_ON_CLOSE_PREVIEW_WALLPAPER = 462,
+<<<<<<< HEAD
    PASSWORDS_PRIVATE_ON_WEAK_CREDENTIALS_CHANGED = 463,
 +
 +  BRAVE_START = 600,
@@ -20,6 +21,9 @@ index 8459d9d4007e5e7a879a2888634c28ff3dc71bd7..761254387ba1e5966366484071abf058
 +  BRAVE_REWARDS_GET_NOTIFICATION,
 +  BRAVE_REWARDS_GET_ALL_NOTIFICATIONS,
 +  BRAVE_WALLET_FAILED,
+=======
++  BRAVE_HISTOGRAM_VALUES
+>>>>>>> Rebased on cr85 and fixed some errors introduced during the rebase
    // Last entry: Add new entries above, then run:
    // python tools/metrics/histograms/update_extension_histograms.py
    ENUM_BOUNDARY
