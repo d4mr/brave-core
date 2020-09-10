@@ -5,7 +5,7 @@
    the above copyright notice appear in all copies and that both that
    copyright notice and this permission notice appear in supporting
    documentation.  No representations are made about the suitability of this
-   software for any purpose.  It is provided "as is" without express or 
+   software for any purpose.  It is provided "as is" without express or
    implied warranty.
 
    A JavaScript program to download youtube videos from within your browser.
@@ -75,7 +75,7 @@
 
 (function() {
 
-var version = '$Revision: 1.37 $'.replace(/^.*\s(\d[.\d]+)\s.*$/s, '$1');
+var version = '$Revision: 1.39 $'.replace(/^.*\s(\d[.\d]+)\s.*$/s, '$1');
 
 var verbose = 2;
 
@@ -117,7 +117,7 @@ function errorI (err) {
 
 
 // Convert any HTML entities to Unicode characters.
-// 
+//
 function html_unquote (str) {
   str = str.replace(/<[^<>]+>/g, '');
   var div = document.createElement('div');
@@ -309,7 +309,7 @@ async function download_url (filename, url, progress_p) {
   a.setAttribute ("download", filename);
   a.setAttribute ("target", "_blank");
 
-  // Getting "The download attribute on anchor was ignored because its 
+  // Getting "The download attribute on anchor was ignored because its
   // href URL has a different security origin."
   // Maybe the cross-origin is that 'document' is on youtube.com but
   // HREF points to googlevideo.com?
@@ -668,8 +668,8 @@ function page_cipher_base_url (url, body) {
 // Implements \Q\E.
 //
 var RX = (function() {
-  var v  = '[\$a-zA-Z][a-zA-Z\\d]*';	// JS variable, 1+ characters
-  var v2 = '[\$a-zA-Z][a-zA-Z\\d]?';	// JS variable, 2 characters
+  var v  = '[\$a-zA-Z][a-zA-Z\\d]*';  // JS variable, 1+ characters
+  var v2 = '[\$a-zA-Z][a-zA-Z\\d]?';  // JS variable, 2 characters
 
   // Also allow "a.b" where "a" would be used as a var.
   v  = v + '(?:\.' + v + ')?';
@@ -709,7 +709,7 @@ function guess_cipher (cipher_id, selftest_p, nowarn) {
   var id = '-';
 
   if (! cipher_id) {
-    [http, head, body] = get_url (url);		// Get home page
+    [http, head, body] = get_url (url);   // Get home page
     check_http_status ('-', url, http, 2);
 
     var vids = [];
@@ -726,7 +726,7 @@ function guess_cipher (cipher_id, selftest_p, nowarn) {
     var id = vids[parseInt(vids.count / 2)];
     url += "/watch\?v=" + id;
 
-    [http, head, body] = get_url (url);  	// Get random video's info
+    [http, head, body] = get_url (url);   // Get random video's info
     check_http_status (id, url, http, 2);
 
     cipher_id = page_cipher_base_url (url, body);
@@ -755,6 +755,10 @@ function guess_cipher (cipher_id, selftest_p, nowarn) {
     // Find "N" in this: var f=18264; a.fa("ipp_signature_cipher_killswitch")
     sts = (body.match(RX('$v = (\\d{5,}) ; $v \\("ipp_signature_cipher_killswitch"\\)'))
            ? RegExp.$1 : null);
+  }
+
+  if (!sts) {  // New way, 15-Aug-2020
+    sts = (body.match(/signatureTimestamp[:=](\d{5,})/s) ? RegExp.$1 : null);
   }
 
   if (!sts) errorI (cipher_id + ": no sts parameter: " + url);
@@ -998,9 +1002,9 @@ function youtube_parse_urlmap (id, urlmap, cipher, into) {
 
   var cipher_printed_p = false;
 
-  if (urlmap.match(/^\{"/s)) {			// Ugh, sometimes it is JSON
+  if (urlmap.match(/^\{"/s)) {      // Ugh, sometimes it is JSON
     urlmap = urlmap.replace(/^\{/, '');
-    urlmap = urlmap.replace(/"(.*?)":([^,]+)[,\}]*/g,	// "a":x, => a=x&
+    urlmap = urlmap.replace(/"(.*?)":([^,]+)[,\}]*/g, // "a":x, => a=x&
                             function(m, k, v) {
                               return k + "=" + encodeURIComponent(v) + "&";
                             });
@@ -1019,11 +1023,11 @@ function youtube_parse_urlmap (id, urlmap, cipher, into) {
       v = RegExp.$2;
     } else if (mapelt.match(/^[a-z][a-z\d_]*=/s)) {
 
-      sig  = (mapelt.match (/\bsig=([^&]+)/s)	// sig= when un-ciphered.
+      sig  = (mapelt.match (/\bsig=([^&]+)/s) // sig= when un-ciphered.
               ? RegExp.$1 : null);
-      sig2 = (mapelt.match (/\bs=([^&]+)/s)	// s= when enciphered.
+      sig2 = (mapelt.match (/\bs=([^&]+)/s) // s= when enciphered.
               ? RegExp.$1 : null);
-      sig3 = (mapelt.match (/\/s\/([^\/?&]+)/s)	// /s/XXX/ in DASH.
+      sig3 = (mapelt.match (/\/s\/([^\/?&]+)/s) // /s/XXX/ in DASH.
               ? RegExp.$1 : null);
 
       k = (mapelt.match(/\bitag=(\d+)/s) ? RegExp.$1 : null);
@@ -1593,7 +1597,7 @@ function load_youtube_formats_video_info (id, url, fmts) {
       var err2 = (check_http_status (id, url, http, 0) ? null : http);
       if (!err) err = err2;
 
-      var body2 = body;		// FFS
+      var body2 = body;   // FFS
       body2 = body2.replace(/%5C/g, '\\');
       body2 = body2.replace(/\\u0026/g, '&');
       body2 = body2.replace(/%3D/g, '=');
@@ -1707,7 +1711,7 @@ function load_youtube_formats_video_info (id, url, fmts) {
   if (!title && !err)
     errorI (id + ": no title in " + info_url_1);
   if (title)
-    title = decodeURIComponent(title) 
+    title = decodeURIComponent(title)
 
   if (!err) {
     err = (body.match(/reason=([^&]+)/s) ? RegExp.$1 : '');
@@ -1746,7 +1750,7 @@ function load_youtube_formats (id, url, size_p) {
 
   var fmts = {};
 
-  // Scrape the HTML page before loading get_video_info because the 
+  // Scrape the HTML page before loading get_video_info because the
   // DASH URL in the HTML page is more likely to work than the one
   // returned by get_video_info.
 
@@ -1968,7 +1972,7 @@ function load_vimeo_formats (id, url, size_p) {
 //
 function load_tumblr_formats (id, url, size_p) {
 
-  // The old code doesn't work any more: I guess they locked down the 
+  // The old code doesn't work any more: I guess they locked down the
   // video info URL to require an API key.  So we can just grab the
   // "400" version, I guess...
 
@@ -2041,22 +2045,22 @@ function load_instagram_formats (id, url, size_p) {
   check_http_status (id, url, http, 1);
 
   var title = (body.match(RX('<meta \\s+ property="og:title" \\s+   \n\
-			   content="([^<>]*?)"'))
+         content="([^<>]*?)"'))
                ? RegExp.$1 : null);
   var src   = (body.match(RX('<meta \\s+ property="og:video:secure_url" \\s+\n\
-			   content="([^<>]*?)"'))
+         content="([^<>]*?)"'))
                ? RegExp.$1 : null);
   var w     = (body.match(RX('<meta \\s+ property="og:video:width" \\s+ \n\
-			   content="([^<>]*?)"'))
+         content="([^<>]*?)"'))
                ? RegExp.$1 : null);
   var h     = (body.match(RX('<meta \\s+ property="og:video:height" \\s+ \n\
-			   content="([^<>]*?)"'))
+         content="([^<>]*?)"'))
                ? RegExp.$1 : null);
   var ct    = (body.match(RX('<meta \\s+ property="og:video:type" \\s+   \n\
-			   content="([^<>]*n?)"'))
+         content="([^<>]*n?)"'))
                ? RegExp.$1 : null);
   var thumb = (body.match(RX('<meta \\s+ property="og:image"      \\s+   \n\
-			   content="([^<>]*n?)"'))
+         content="([^<>]*n?)"'))
                ? RegExp.$1 : null);
   var year  = (body.match (/\bdatetime=\"(\d{4})-/si)
               ? RegExp.$1 : null);
@@ -2161,7 +2165,7 @@ function pick_download_format (id, site, url, force_fmt, fmts) {
       continue;
     var fmt = fmts[k];
     var ct = fmt['content_type'];
-    if (ct.match(/^video\/mp4.*vp9/i)) {	  // video/mp4;+codecs="vp9"
+    if (ct.match(/^video\/mp4.*vp9/i)) {    // video/mp4;+codecs="vp9"
       fmt['content_type'] = 'video/webm';
     } else if (ct.match(/^audio\/mp4.*opus/i)) {  // audio/mp4;+codecs="opus"
       fmt['content_type'] = 'audio/opus';
@@ -2268,27 +2272,27 @@ function pick_download_format (id, site, url, force_fmt, fmts) {
       var A = known_formats[ida];
       var B = known_formats[idb];
 
-      var aa = A['h'] || 0;			// Prefer taller video.
+      var aa = A['h'] || 0;     // Prefer taller video.
       var bb = B['h'] || 0;
       if (aa != bb) return (bb - aa);
 
-      aa = ((A['v'] || '') == 'mp4');		// Prefer MP4 over WebM.
+      aa = ((A['v'] || '') == 'mp4');   // Prefer MP4 over WebM.
       bb = ((B['v'] || '') == 'mp4');
       if (aa != bb) return (bb - aa);
 
-      aa = A['c'] || 0;				// Prefer 5.1 over stereo.
+      aa = A['c'] || 0;       // Prefer 5.1 over stereo.
       bb = B['c'] || 0;
       if (aa != bb) return (bb - aa);
 
-      aa = A['abr'] || 0;			// Prefer higher audio rate.
+      aa = A['abr'] || 0;     // Prefer higher audio rate.
       bb = B['abr'] || 0;
       if (aa != bb) return (bb - aa);
 
-      aa = ((A['a'] || '') == 'aac');		// Prefer AAC over MP3.
+      aa = ((A['a'] || '') == 'aac');   // Prefer AAC over MP3.
       bb = ((B['a'] || '') == 'aac');
       if (aa != bb) return (bb - aa);
 
-      aa = ((A['a'] || '') == 'mp3');		// Prefer MP3 over Vorbis.
+      aa = ((A['a'] || '') == 'mp3');   // Prefer MP3 over Vorbis.
       bb = ((B['a'] || '') == 'mp3');
       if (aa != bb) return (bb - aa);
 
@@ -2438,20 +2442,13 @@ function youtube_playlist_urls(id, url) {
   check_http_status (id, url, http, 1);
 
   var title = '';
-  if (body.match(/"title":"(.*?)","description"/s))
+  if (body.match(/"og:title"\s+content="(.*?)">/s))
+    title = RegExp.$1;
+  if (!title && body.match(/<title>\s*([^<>]+?)\s*<\/title>/si))
     title = RegExp.$1;
 
   title = munge_title (title);
   if (!title) title = 'Untitled Playlist';
-
-  // This is very different than the corresponding Perl function because
-  // we're getting very different document bodies, presumably based upon
-  // the user agent. Hooray.
-  //
-  // I imagine I could sync them if I updated the user-agent in the Perl
-  // code to be more current, and I will probably have to do that eventually,
-  // but that might well unleash other horrors that I'd rather put off until
-  // absolutely necessary.
 
   if (body.match(/window\[.ytInitialData.\] *= *(.*?);/s))
     body = RegExp.$1;
@@ -2602,7 +2599,7 @@ function canonical_url (url) {
   url = url.replace(/^(https?:\/\/([a-z]+\.)?vimeo\.com\/)[^\d].*\#(\d+)$/s,
                     '$1$3');
 
-  url = url.replace(/^http:/s, 'https:');	// Always https.
+  url = url.replace(/^http:/s, 'https:'); // Always https.
 
   var id = null;
   var site = null;
@@ -2625,7 +2622,7 @@ function canonical_url (url) {
   // Youtube "/verify_age" URLs.
   } else if (url.match(RX('\n\
              ^https?://(?:[a-z]+\\.)?(youtube) (?:-nocookie)? \\.com/+   \n\
-	     .* next_url=([^&]+)')) ||
+       .* next_url=([^&]+)')) ||
              url.match(RX('^https?://(?:[a-z]+\\.)?google\\.com/   \n\
                      .* service = (youtube)                      \n\
                      .* continue = ( http%3A [^?&]+)')) ||
@@ -3011,14 +3008,14 @@ window.youtubedown               = youtubedown;
 ;; Yo dawg, we heard you liked regexps, so we put regexps in your regexps
 ;; so you can regexp while you sexpr.
 
-(defun ytre() 
+(defun ytre()
   (query-replace-regexp
    (concat "\\$\\([_a-z\d]+\\)"
            "[ \t\n]*=~[ \t\n]*"
            "s\\(.\\)\\(.*?\\)\\2\\(.*?\\)\\2\\([a-z]*\\);")
    "\\1 = \\1.replace(/\\3/\\5, '\\4');"))
 
-(defun ytre2() 
+(defun ytre2()
   (query-replace-regexp
    (concat "\\$\\([_a-z\d]+\\)"
            "[ \t\n]*=~[ \t\n]*"
