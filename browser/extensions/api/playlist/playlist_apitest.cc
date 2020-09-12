@@ -7,7 +7,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/thread_test_helper.h"
 #include "brave/common/brave_paths.h"
-#include "brave/common/extensions/extension_constants.h"
 #include "brave/components/playlist/browser/features.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/network_session_configurator/common/network_switches.h"

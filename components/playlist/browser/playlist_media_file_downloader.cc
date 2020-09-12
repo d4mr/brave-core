@@ -99,7 +99,7 @@ bool AppendToFileThenDelete(const base::FilePath& source_path,
 
   // Now that it has been copied, delete the source file.
   source_file.reset();
-  base::DeleteFile(source_path, false);
+  base::DeleteFile(source_path);
   return !got_error;
 }
 
@@ -119,7 +119,7 @@ int DoGenerateSingleMediaFileOnIOThread(
       playlist_dir_path.Append(base::FilePath::StringType(
           unified_media_file_name.begin(), unified_media_file_name.end()));
 
-  base::DeleteFile(unified_media_file_path, false);
+  base::DeleteFile(unified_media_file_path);
 
   base::File unified_media_file(
       unified_media_file_path,
@@ -148,7 +148,7 @@ int DoGenerateSingleMediaFileOnIOThread(
   DCHECK(base::PathExists(unified_media_file_path));
 
   // Delete empty source files dir.
-  base::DeleteFile(source_files_dir, true);
+  base::DeletePathRecursively(source_files_dir);
 
   if (unified_media_file.GetLength() == 0)
     return -1;

@@ -40,7 +40,7 @@ const base::FilePath::StringType kThumbnailFileName(
     FILE_PATH_LITERAL("thumbnail"));
 
 void DeleteDir(const base::FilePath& path) {
-  base::DeleteFile(path, true);
+  base::DeletePathRecursively(path);
 }
 
 PlaylistInfo CreatePlaylistInfo(const CreatePlaylistParams& params) {
@@ -150,7 +150,7 @@ const char kHTMLTemplate[] =
 
 int DoGenerateHTMLFileOnIOThread(const base::FilePath& html_file_path) {
   if (base::PathExists(html_file_path))
-    base::DeleteFile(html_file_path, false);
+    base::DeleteFile(html_file_path);
 
   base::File html_file(html_file_path,
                        base::File::FLAG_CREATE | base::File::FLAG_WRITE);
