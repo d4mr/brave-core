@@ -17,9 +17,8 @@ class PlaylistUI : public BasicUI {
  public:
   PlaylistUI(content::WebUI* web_ui, const std::string& host);
   ~PlaylistUI() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PlaylistUI);
+  PlaylistUI(const PlaylistUI&) = delete;
+  PlaylistUI& operator=(const PlaylistUI&) = delete;
 };
 
 }  // namespace playlist

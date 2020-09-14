@@ -18,7 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "brave/components/playlist/browser/playlist_media_file_downloader.h"
+#include "brave/components/playlist/browser/playlist_media_file_download_manager.h"
+#include "brave/components/playlist/browser/playlist_thumbnail_downloader.h"
 #include "brave/components/playlist/browser/playlist_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -31,11 +32,6 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace network {
-class SharedURLLoaderFactory;
-class SimpleURLLoader;
-}  // namespace network
-
 class PrefService;
 
 namespace playlist {
@@ -43,11 +39,13 @@ namespace playlist {
 class PlaylistServiceObserver;
 
 class PlaylistService : public KeyedService,
-                        public PlaylistMediaFileDownloader::Client {
+                        public PlaylistMediaFileDownloadManager::Delegate,
+                        public PlaylistThumbnailDownloader::Delegate {
  public:
   explicit PlaylistService(content::BrowserContext* context);
-
   ~PlaylistService() override;
+  PlaylistService(const PlaylistService&) = delete;
+  PlaylistService& operator=(const PlaylistService&) = delete;
 
   // False when |params| are not sufficient for new playlist.
   // brave_playlist.json explains in detail about below apis.
@@ -66,25 +64,20 @@ class PlaylistService : public KeyedService,
   base::FilePath GetPlaylistItemDirPath(const std::string& id) const;
 
  private:
-  using SimpleURLLoaderList =
-      std::list<std::unique_ptr<network::SimpleURLLoader>>;
+  // PlaylistMediaFileDownloadManager::Delegate overrides:
+  void OnMediaFileReady(base::Value playlist_value, bool partial) override;
+  void OnMediaFileGenerationFailed(base::Value playlist_value) override;
 
-  // PlaylistMediaFileController::Client overrides:
-  void OnMediaFileReady(base::Value&& playlist_value, bool partial) override;
-  void OnMediaFileGenerationFailed(base::Value&& playlist_value) override;
+  // PlaylistThumbnailDownloader::Delegate overrides:
+  void OnThumbnailDownloaded(const std::string& id,
+                             const base::FilePath& path) override;
 
   void OnPlaylistItemDirCreated(const std::string& id, bool directory_ready);
 
   void DownloadThumbnail(const std::string& id);
-  void OnThumbnailDownloaded(const std::string& id,
-                             SimpleURLLoaderList::iterator it,
-                             base::FilePath path);
-  void AddPlaylistToMediaFileGenerationQueue(const std::string& id);
-  void GenerateMediaFiles();
+  void GenerateMediafileForPlaylistItem(const std::string& id);
 
-  void OnDeletePlaylist(const std::string& playlist_id, bool success);
-
-  base::SequencedTaskRunner* io_task_runner();
+  base::SequencedTaskRunner* task_runner();
 
   // Delete orphaned playlist item directories that are not included in db.
   void CleanUp();
@@ -92,11 +85,12 @@ class PlaylistService : public KeyedService,
 
   void NotifyPlaylistChanged(const PlaylistChangeParams& params);
 
-  void UpdatePlaylistValue(const std::string& id, base::Value&& value);
+  void UpdatePlaylistValue(const std::string& id, base::Value value);
   void RemovePlaylist(const std::string& id);
 
+  // index.html is only used for demo (brave://playlist)
   void GenerateIndexHTMLFile(const base::FilePath& playlist_path);
-  void OnHTMLFileGenerated(int error_code);
+  void OnHTMLFileGenerated(bool generated);
 
   // Playlist creation can be ready to play two steps.
   // Step 1. When creation is requested, requested info is put to db and
@@ -109,24 +103,18 @@ class PlaylistService : public KeyedService,
   //         Whenever thumbnail is fetched or media files are ready,
   //         it is notified.
 
-  content::BrowserContext* context_;
   const base::FilePath base_dir_;
-  base::queue<base::Value> pending_media_file_creation_jobs_;
   base::ObserverList<PlaylistServiceObserver> observers_;
 
-  std::unique_ptr<PlaylistMediaFileDownloader> video_media_file_downloader_;
-  std::unique_ptr<PlaylistMediaFileDownloader> audio_media_file_downloader_;
+  std::unique_ptr<PlaylistMediaFileDownloadManager>
+      media_file_download_manager_;
+  std::unique_ptr<PlaylistThumbnailDownloader> thumbnail_downloader_;
 
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  SimpleURLLoaderList url_loaders_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   PrefService* prefs_;
 
   base::WeakPtrFactory<PlaylistService> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlaylistService);
 };
 
 }  // namespace playlist

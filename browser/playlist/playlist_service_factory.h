@@ -19,6 +19,9 @@ class PlaylistServiceFactory : public BrowserContextKeyedServiceFactory {
   static PlaylistService* GetForProfile(Profile* profile);
   static PlaylistServiceFactory* GetInstance();
 
+  PlaylistServiceFactory(const PlaylistServiceFactory&) = delete;
+  PlaylistServiceFactory& operator=(const PlaylistServiceFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<PlaylistServiceFactory>;
 
@@ -30,8 +33,6 @@ class PlaylistServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(PlaylistServiceFactory);
 };
 
 }  // namespace playlist

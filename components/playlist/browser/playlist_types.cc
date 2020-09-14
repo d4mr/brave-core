@@ -36,19 +36,19 @@ std::string PlaylistChangeParams::GetPlaylistChangeTypeAsString(
   }
 }
 
-PlaylistChangeParams::PlaylistChangeParams() {}
+PlaylistChangeParams::PlaylistChangeParams() = default;
 
 PlaylistChangeParams::PlaylistChangeParams(ChangeType type,
-                                             const std::string& id)
+                                           const std::string& id)
     : change_type(type), playlist_id(id) {}
-PlaylistChangeParams::~PlaylistChangeParams() {}
+PlaylistChangeParams::~PlaylistChangeParams() = default;
 
 MediaFileInfo::MediaFileInfo(const std::string& url, const std::string& title)
     : media_file_url(url), media_file_title(title) {}
 MediaFileInfo::~MediaFileInfo() {}
 
-CreatePlaylistParams::CreatePlaylistParams() {}
-CreatePlaylistParams::~CreatePlaylistParams() {}
+CreatePlaylistParams::CreatePlaylistParams() = default;
+CreatePlaylistParams::~CreatePlaylistParams() = default;
 CreatePlaylistParams::CreatePlaylistParams(const CreatePlaylistParams& rhs) {
   playlist_thumbnail_url = rhs.playlist_thumbnail_url;
   playlist_name = rhs.playlist_name;
@@ -56,8 +56,8 @@ CreatePlaylistParams::CreatePlaylistParams(const CreatePlaylistParams& rhs) {
   audio_media_files = rhs.audio_media_files;
 }
 
-PlaylistInfo::PlaylistInfo() {}
-PlaylistInfo::~PlaylistInfo() {}
+PlaylistInfo::PlaylistInfo() = default;
+PlaylistInfo::~PlaylistInfo() = default;
 PlaylistInfo::PlaylistInfo(const PlaylistInfo& rhs) {
   id = rhs.id;
   playlist_name = rhs.playlist_name;

@@ -20,21 +20,19 @@
 #include "base/token.h"
 #include "brave/components/playlist/browser/playlist_constants.h"
 #include "brave/components/playlist/browser/playlist_data_source.h"
+#include "brave/components/playlist/browser/playlist_service_helper.h"
 #include "brave/components/playlist/browser/playlist_service_observer.h"
 #include "brave/components/playlist/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/preferences/public/cpp/dictionary_value_update.h"
+#include "services/preferences/public/cpp/scoped_pref_update.h"
 
 namespace playlist {
 namespace {
 
 const base::FilePath::StringType kBaseDirName(FILE_PATH_LITERAL("playlist"));
-
-constexpr unsigned int kRetriesCountOnNetworkChange = 1;
 
 const base::FilePath::StringType kThumbnailFileName(
     FILE_PATH_LITERAL("thumbnail"));
@@ -49,75 +47,6 @@ PlaylistInfo CreatePlaylistInfo(const CreatePlaylistParams& params) {
   p.playlist_name = params.playlist_name;
   p.create_params = params;
   return p;
-}
-
-base::Value GetValueFromMediaFile(const MediaFileInfo& info) {
-  base::Value media_file(base::Value::Type::DICTIONARY);
-  media_file.SetStringKey(kPlaylistMediaFileUrlKey, info.media_file_url);
-  media_file.SetStringKey(kPlaylistMediaFileTitleKey, info.media_file_title);
-  return media_file;
-}
-
-base::Value GetValueFromMediaFiles(
-    const std::vector<MediaFileInfo>& media_files) {
-  base::Value media_files_value(base::Value::Type::LIST);
-  for (const MediaFileInfo& info : media_files)
-    media_files_value.Append(GetValueFromMediaFile(info));
-  return media_files_value;
-}
-
-base::Value GetValueFromCreateParams(const CreatePlaylistParams& params) {
-  base::Value create_params_value(base::Value::Type::DICTIONARY);
-  create_params_value.SetStringKey(kPlaylistPlaylistThumbnailUrlKey,
-                                   params.playlist_thumbnail_url);
-  create_params_value.SetStringKey(kPlaylistPlaylistNameKey,
-                                   params.playlist_name);
-  create_params_value.SetKey(kPlaylistVideoMediaFilesKey,
-                             GetValueFromMediaFiles(params.video_media_files));
-  create_params_value.SetKey(kPlaylistAudioMediaFilesKey,
-                             GetValueFromMediaFiles(params.audio_media_files));
-  return create_params_value;
-}
-
-base::Value GetTitleValueFromCreateParams(const CreatePlaylistParams& params) {
-  base::Value titles_value(base::Value::Type::LIST);
-  for (const MediaFileInfo& info : params.video_media_files)
-    titles_value.Append(base::Value(info.media_file_title));
-  return titles_value;
-}
-
-base::Value GetValueFromPlaylistInfo(const PlaylistInfo& info) {
-  base::Value playlist_value(base::Value::Type::DICTIONARY);
-  playlist_value.SetStringKey(kPlaylistIDKey, info.id);
-  playlist_value.SetStringKey(kPlaylistPlaylistNameKey, info.playlist_name);
-  playlist_value.SetStringKey(kPlaylistThumbnailPathKey, info.thumbnail_path);
-  playlist_value.SetStringKey(kPlaylistVideoMediaFilePathKey,
-                              info.video_media_file_path);
-  playlist_value.SetStringKey(kPlaylistAudioMediaFilePathKey,
-                              info.audio_media_file_path);
-  playlist_value.SetBoolKey(kPlaylistPartialReadyKey, info.partial_ready);
-  playlist_value.SetKey(kPlaylistTitlesKey,
-                        GetTitleValueFromCreateParams(info.create_params));
-  playlist_value.SetKey(kPlaylistCreateParamsKey,
-                        GetValueFromCreateParams(info.create_params));
-  return playlist_value;
-}
-
-net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTagForURLLoad() {
-  return net::DefineNetworkTrafficAnnotation("playlist_controller", R"(
-      semantics {
-        sender: "Brave playlist controller"
-        description:
-          "Fetching thumbnail image for newly created playlist item"
-        trigger:
-          "User-initiated for creating new playlist item"
-        data:
-          "Thumbnail for playlist item"
-        destination: WEBSITE
-      }
-      policy {
-        cookies_allowed: NO
-      })");
 }
 
 std::vector<base::FilePath> GetOrphanedPaths(
@@ -139,7 +68,8 @@ std::vector<base::FilePath> GetOrphanedPaths(
   return orphaned_paths;
 }
 
-const char kHTMLTemplate[] =
+bool DoGenerateHTMLFileOnTaskRunner(const base::FilePath& html_file_path) {
+  constexpr char kHTMLTemplate[] =
     "<video id='v' controls autoplay "
     "onplay='a=document.getElementById(\"a\");a.currentTime=this.currentTime;a."
     "play();' "
@@ -148,43 +78,24 @@ const char kHTMLTemplate[] =
     "style='display:none'><source src='audio_file.m4a' type='audio/mp4' "
     "/></video>";
 
-int DoGenerateHTMLFileOnIOThread(const base::FilePath& html_file_path) {
-  if (base::PathExists(html_file_path))
-    base::DeleteFile(html_file_path);
-
-  base::File html_file(html_file_path,
-                       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
-  if (!html_file.IsValid())
-    return -1;
-
-  html_file.WriteAtCurrentPos(kHTMLTemplate, 322 /*kHTMLTemplate.length()*/);
-  return 0;
+  base::DeleteFile(html_file_path);
+  return base::WriteFile(html_file_path, kHTMLTemplate);
 }
 
 }  // namespace
 
 PlaylistService::PlaylistService(content::BrowserContext* context)
-    : context_(context),
-      base_dir_(context->GetPath().Append(kBaseDirName)),
-      url_loader_factory_(
-          content::BrowserContext::GetDefaultStoragePartition(context)
-              ->GetURLLoaderFactoryForBrowserProcess()),
+    : base_dir_(context->GetPath().Append(kBaseDirName)),
       prefs_(user_prefs::UserPrefs::Get(context)),
       weak_factory_(this) {
   content::URLDataSource::Add(
       context,
       std::make_unique<PlaylistDataSource>(this));
 
-  // TODO(pilgrim) dynamically set file extensions based on format
-  // (may require changes to youtubedown parser)
-  video_media_file_downloader_.reset(new PlaylistMediaFileDownloader(
-      this, context_, FILE_PATH_LITERAL("video_source_files"),
-      FILE_PATH_LITERAL("video_file.mp4"), kPlaylistVideoMediaFilePathKey,
-      kPlaylistCreateParamsVideoMediaFilesPathKey));
-  audio_media_file_downloader_.reset(new PlaylistMediaFileDownloader(
-      this, context_, FILE_PATH_LITERAL("audio_source_files"),
-      FILE_PATH_LITERAL("audio_file.m4a"), kPlaylistAudioMediaFilePathKey,
-      kPlaylistCreateParamsAudioMediaFilesPathKey));
+
+  media_file_download_manager_.reset(new PlaylistMediaFileDownloadManager(
+      context, this, base_dir_));
+  thumbnail_downloader_.reset(new PlaylistThumbnailDownloader(context, this));
 
   CleanUp();
 }
@@ -201,7 +112,7 @@ void PlaylistService::NotifyPlaylistChanged(
     obs.OnPlaylistItemStatusChanged(params);
 }
 
-void PlaylistService::AddPlaylistToMediaFileGenerationQueue(
+void PlaylistService::GenerateMediafileForPlaylistItem(
     const std::string& id) {
   const base::Value* playlist_info =
       prefs_->Get(kPlaylistItems)->FindDictKey(id);
@@ -211,33 +122,8 @@ void PlaylistService::AddPlaylistToMediaFileGenerationQueue(
   }
 
   VLOG(2) << __func__;
-  // Add to pending jobs
-  pending_media_file_creation_jobs_.push(playlist_info->Clone());
-
-  // If either media file controller is generating a playlist media file,
-  // delay the next playlist generation. It will be triggered when the current
-  // one is finished.
-  if (!video_media_file_downloader_->in_progress() &&
-      !audio_media_file_downloader_->in_progress()) {
-    GenerateMediaFiles();
-  }
-}
-
-void PlaylistService::GenerateMediaFiles() {
-  DCHECK(!video_media_file_downloader_->in_progress() &&
-         !audio_media_file_downloader_->in_progress());
-  DCHECK(!pending_media_file_creation_jobs_.empty());
-
-  base::Value video_value(std::move(pending_media_file_creation_jobs_.front()));
-  base::Value audio_value = video_value.Clone();
-  pending_media_file_creation_jobs_.pop();
-  VLOG(2) << __func__ << ": "
-          << *video_value.FindStringKey(kPlaylistPlaylistNameKey);
-
-  video_media_file_downloader_->GenerateSingleMediaFile(std::move(video_value),
-                                                        base_dir_);
-  audio_media_file_downloader_->GenerateSingleMediaFile(std::move(audio_value),
-                                                        base_dir_);
+  media_file_download_manager_->GenerateMediaFileForPlaylistItem(
+      *playlist_info);
 }
 
 base::FilePath PlaylistService::GetPlaylistItemDirPath(
@@ -246,16 +132,16 @@ base::FilePath PlaylistService::GetPlaylistItemDirPath(
 }
 
 void PlaylistService::UpdatePlaylistValue(const std::string& id,
-                                          base::Value&& value) {
-  base::Value playlist_items = prefs_->Get(kPlaylistItems)->Clone();
-  playlist_items.SetKey(id, std::move(value));
-  prefs_->Set(kPlaylistItems, playlist_items);
+                                          base::Value value) {
+  prefs::ScopedDictionaryPrefUpdate update(prefs_, kPlaylistItems);
+  auto playlist_items = update.Get();
+  playlist_items->Set(id, base::Value::ToUniquePtrValue(std::move(value)));
 }
 
 void PlaylistService::RemovePlaylist(const std::string& id) {
-  base::Value playlist_items = prefs_->Get(kPlaylistItems)->Clone();
-  playlist_items.RemoveKey(id);
-  prefs_->Set(kPlaylistItems, playlist_items);
+  prefs::ScopedDictionaryPrefUpdate update(prefs_, kPlaylistItems);
+  auto playlist_items = update.Get();
+  playlist_items->Remove(id, nullptr);
 }
 
 // TODO(simonhong): Add basic validation for |params|.
@@ -268,7 +154,7 @@ void PlaylistService::CreatePlaylistItem(const CreatePlaylistParams& params) {
       {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED, info.id});
 
   base::PostTaskAndReplyWithResult(
-      io_task_runner(),
+      task_runner(),
       FROM_HERE,
       base::BindOnce(&base::CreateDirectory, GetPlaylistItemDirPath(info.id)),
       base::BindOnce(&PlaylistService::OnPlaylistItemDirCreated,
@@ -286,7 +172,7 @@ void PlaylistService::OnPlaylistItemDirCreated(const std::string& id,
   }
 
   DownloadThumbnail(id);
-  AddPlaylistToMediaFileGenerationQueue(id);
+  GenerateMediafileForPlaylistItem(id);
 }
 
 void PlaylistService::DownloadThumbnail(const std::string& id) {
@@ -303,38 +189,14 @@ void PlaylistService::DownloadThumbnail(const std::string& id) {
     return;
   }
 
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->url = GURL(*thumbnail_url);
-  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  auto loader = network::SimpleURLLoader::Create(
-      std::move(request),
-      GetNetworkTrafficAnnotationTagForURLLoad());
-  loader->SetRetryOptions(
-      kRetriesCountOnNetworkChange,
-      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
-
-  auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(loader));
-  const base::FilePath thumbnail_path =
-      GetPlaylistItemDirPath(id).Append(kThumbnailFileName);
-  iter->get()->DownloadToFile(
-      url_loader_factory_.get(),
-      base::BindOnce(&PlaylistService::OnThumbnailDownloaded,
-                     base::Unretained(this),
-                     id,
-                     std::move(iter)),
-      thumbnail_path);
+  thumbnail_downloader_->DownloadThumbnail(
+      id,
+      GURL(*thumbnail_url),
+      GetPlaylistItemDirPath(id).Append(kThumbnailFileName));
 }
 
 void PlaylistService::OnThumbnailDownloaded(const std::string& id,
-                                            SimpleURLLoaderList::iterator it,
-                                            base::FilePath path) {
-  // When delete all is requested during the thumbnail downloading, we should
-  // just return. |url_loaders_| is cleared.
-  if (url_loaders_.empty())
-    return;
-
-  url_loaders_.erase(it);
-
+                                            const base::FilePath& path) {
   if (path.empty()) {
     VLOG(2) << __func__ << ": thumbnail fetching failed for " << id;
     NotifyPlaylistChanged(
@@ -343,6 +205,7 @@ void PlaylistService::OnThumbnailDownloaded(const std::string& id,
   }
 
   const std::string thumbnail_path =
+// Delete this. Instead GetPlatformPathString();
 #if defined(OS_WIN)
       base::UTF16ToUTF8(path.value());
 #else
@@ -410,24 +273,20 @@ void PlaylistService::RecoverPlaylistItem(const std::string& id) {
       !audio_media_file_path || audio_media_file_path->empty() ||
       *partial_ready) {
     VLOG(2) << __func__ << ": Regenerate media file";
-    AddPlaylistToMediaFileGenerationQueue(id);
+    GenerateMediafileForPlaylistItem(id);
   }
 }
 
 void PlaylistService::DeletePlaylistItem(const std::string& id) {
-  // Cancel if currently downloading item is id.
-  if (video_media_file_downloader_->current_playlist_id() == id) {
-    video_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
-    audio_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
-  }
-
+  media_file_download_manager_->CancelDownloadRequest(id);
+  thumbnail_downloader_->CancelDownloadRequest(id);
   RemovePlaylist(id);
 
   NotifyPlaylistChanged(
       {PlaylistChangeParams::ChangeType::CHANGE_TYPE_DELETED, id});
 
   // Delete assets from filesystem after updating db.
-  io_task_runner()->PostTask(
+  task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DeleteDir, GetPlaylistItemDirPath(id)));
 }
@@ -437,11 +296,8 @@ void PlaylistService::DeleteAllPlaylistItems() {
 
   // Cancel currently generated playlist if needed and pending thumbnail
   // download jobs.
-  video_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
-  audio_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
-  url_loaders_.clear();
-  base::queue<base::Value> empty_queue;
-  std::swap(pending_media_file_creation_jobs_, empty_queue);
+  media_file_download_manager_->CancelAllDownloadRequests();
+  thumbnail_downloader_->CancelAllDownloadRequests();
 
   prefs_->ClearPref(kPlaylistItems);
 
@@ -455,21 +311,12 @@ void PlaylistService::AddObserver(PlaylistServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void PlaylistService::RemoveObserver(
-    PlaylistServiceObserver* observer) {
+void PlaylistService::RemoveObserver(PlaylistServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PlaylistService::OnMediaFileReady(base::Value&& playlist_value,
+void PlaylistService::OnMediaFileReady(base::Value playlist_value,
                                        bool partial) {
-  // TODO(simonhong): Revisit how |partial| handles.
-  if (video_media_file_downloader_->in_progress() ||
-      audio_media_file_downloader_->in_progress())
-    partial = true;
-  VLOG(2) << __func__ << ": "
-          << *playlist_value.FindStringKey(kPlaylistPlaylistNameKey) << " "
-          << partial;
-
   const std::string playlist_id =
       *playlist_value.FindStringKey(kPlaylistIDKey);
   UpdatePlaylistValue(playlist_id, std::move(playlist_value));
@@ -486,25 +333,20 @@ void PlaylistService::OnMediaFileReady(base::Value&& playlist_value,
     return;
 
   GenerateIndexHTMLFile(GetPlaylistItemDirPath(playlist_id));
-
-  if (!pending_media_file_creation_jobs_.empty())
-    GenerateMediaFiles();
 }
 
 void PlaylistService::OnMediaFileGenerationFailed(
-    base::Value&& playlist_value) {
+    base::Value playlist_value) {
   VLOG(2) << __func__ << ": "
           << *playlist_value.FindStringKey(kPlaylistPlaylistNameKey);
 
-  video_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
-  audio_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
   const std::string playlist_id =
       *playlist_value.FindStringKey(kPlaylistIDKey);
+  UpdatePlaylistValue(playlist_id, std::move(playlist_value));
+  thumbnail_downloader_->CancelDownloadRequest(playlist_id);
+
   NotifyPlaylistChanged(
       {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED, playlist_id});
-
-  if (!pending_media_file_creation_jobs_.empty())
-    GenerateMediaFiles();
 }
 
 void PlaylistService::OnGetOrphanedPaths(
@@ -516,7 +358,7 @@ void PlaylistService::OnGetOrphanedPaths(
 
   for (const auto& path : orphaned_paths) {
     VLOG(2) << __func__ << ": " << path << " is orphaned";
-    io_task_runner()->PostTask(FROM_HERE, base::BindOnce(&DeleteDir, path));
+    task_runner()->PostTask(FROM_HERE, base::BindOnce(&DeleteDir, path));
   }
 }
 
@@ -526,12 +368,13 @@ void PlaylistService::CleanUp() {
   base::flat_set<std::string> ids;
   for (const auto& item : playlist.GetList()) {
     const std::string* id = item.FindStringKey(kPlaylistIDKey);
+    DCHECK(id);
     if (id)
       ids.insert(*id);
   }
 
   base::PostTaskAndReplyWithResult(
-      io_task_runner(), FROM_HERE,
+      task_runner(), FROM_HERE,
       base::BindOnce(&GetOrphanedPaths, base_dir_, ids),
       base::BindOnce(&PlaylistService::OnGetOrphanedPaths,
                      weak_factory_.GetWeakPtr()));
@@ -551,25 +394,25 @@ void PlaylistService::GenerateIndexHTMLFile(
     const base::FilePath& playlist_path) {
   auto html_file_path = playlist_path.Append(FILE_PATH_LITERAL("index.html"));
   base::PostTaskAndReplyWithResult(
-      io_task_runner(), FROM_HERE,
-      base::BindOnce(&DoGenerateHTMLFileOnIOThread, html_file_path),
+      task_runner(), FROM_HERE,
+      base::BindOnce(&DoGenerateHTMLFileOnTaskRunner, html_file_path),
       base::BindOnce(&PlaylistService::OnHTMLFileGenerated,
                      weak_factory_.GetWeakPtr()));
 }
 
-void PlaylistService::OnHTMLFileGenerated(int error_code) {
-  if (error_code)
+void PlaylistService::OnHTMLFileGenerated(bool generated) {
+  if (!generated)
     LOG(ERROR) << "couldn't create HTML file for play";
 }
 
-base::SequencedTaskRunner* PlaylistService::io_task_runner() {
-  if (!io_task_runner_) {
-    io_task_runner_ = base::CreateSequencedTaskRunner(
+base::SequencedTaskRunner* PlaylistService::task_runner() {
+  if (!task_runner_) {
+    task_runner_ = base::CreateSequencedTaskRunner(
         { base::ThreadPool(), base::MayBlock(),
           base::TaskPriority::BEST_EFFORT,
           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN });
   }
-  return io_task_runner_.get();
+  return task_runner_.get();
 }
 
 }  // namespace playlist

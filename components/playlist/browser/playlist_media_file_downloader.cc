@@ -55,23 +55,12 @@ base::FilePath::StringType GetFileNameStringFromIndex(int index) {
 #endif
 }
 
-size_t WriteToFile(base::File* file, base::StringPiece data) {
-  size_t bytes_written = 0;
-
-  if (file->IsValid()) {
-    if (!data.empty())
-      bytes_written +=
-          std::max(0, file->WriteAtCurrentPos(data.data(), data.size()));
-  }
-
-  return bytes_written;
-}
-
 // Return false when source file is not appended properly.
-bool AppendToFileThenDelete(const base::FilePath& source_path,
-                            base::File* destination_file,
-                            char* read_buffer,
-                            size_t read_buffer_size) {
+bool AppendToFileThenDeleteSource(const base::FilePath& source_path,
+                                  base::File* destination_file,
+                                  const base::FilePath& destination_file_path,
+                                  char* read_buffer,
+                                  size_t read_buffer_size) {
   base::ScopedFILE source_file(base::OpenFile(source_path, "rb"));
   if (!source_file)
     return false;
@@ -85,9 +74,9 @@ bool AppendToFileThenDelete(const base::FilePath& source_path,
   bool got_error = false;
   while ((num_bytes_read =
               fread(read_buffer, 1, read_buffer_size, source_file.get())) > 0) {
-    if (num_bytes_read !=
-        WriteToFile(destination_file,
-                    base::StringPiece(read_buffer, num_bytes_read))) {
+    if (!base::AppendToFile(destination_file_path,
+                            read_buffer,
+                            num_bytes_read)) {
       // Exclude source file if an error occurs during the appending by
       // resetting dest file's previous file length.
       destination_file->SetLength(dest_file_size);
@@ -103,10 +92,7 @@ bool AppendToFileThenDelete(const base::FilePath& source_path,
   return !got_error;
 }
 
-// Return -1 if failed.
-// Return 0 if all source files are used for generation.
-// Return 1 if some of source files are skipped for generation.
-int DoGenerateSingleMediaFileOnIOThread(
+MediaFileGenResult DoGenerateSingleMediaFile(
     const base::FilePath& playlist_dir_path,
     const base::FilePath::StringType& source_media_files_dir,
     const base::FilePath::StringType& unified_media_file_name,
@@ -125,10 +111,10 @@ int DoGenerateSingleMediaFileOnIOThread(
       unified_media_file_path,
       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   if (!unified_media_file.IsValid())
-    return -1;
+    return MediaFileGenResult::FAILED;
 
   const size_t kReadBufferSize = 1 << 16;  // 64KiB
-  std::unique_ptr<char[]> read_buffer(new char[kReadBufferSize]);
+  char read_buffer[kReadBufferSize];
   bool has_skipped_source_files = false;
   for (int i = 0; i < num_source_files; ++i) {
     const base::FilePath media_file_source_path =
@@ -140,8 +126,11 @@ int DoGenerateSingleMediaFileOnIOThread(
       continue;
     }
 
-    if (!AppendToFileThenDelete(media_file_source_path, &unified_media_file,
-                                read_buffer.get(), kReadBufferSize)) {
+    if (!AppendToFileThenDeleteSource(media_file_source_path,
+                                      &unified_media_file,
+                                      unified_media_file_path,
+                                      read_buffer,
+                                      kReadBufferSize)) {
       has_skipped_source_files = true;
     }
   }
@@ -151,9 +140,10 @@ int DoGenerateSingleMediaFileOnIOThread(
   base::DeletePathRecursively(source_files_dir);
 
   if (unified_media_file.GetLength() == 0)
-    return -1;
+    return MediaFileGenResult::FAILED;
 
-  return has_skipped_source_files ? 1 : 0;
+  return has_skipped_source_files ? MediaFileGenResult::PARTIAL_SUCCESS
+                                  : MediaFileGenResult::SUCCESS;
 }
 
 }  // namespace
@@ -168,13 +158,13 @@ base::FilePath::StringType GetPlaylistIDDirName(
 }
 
 PlaylistMediaFileDownloader::PlaylistMediaFileDownloader(
-    Client* client,
+    Delegate* delegate,
     content::BrowserContext* context,
     base::FilePath::StringType source_media_files_dir,
     base::FilePath::StringType unified_media_file_name,
     std::string media_file_path_key,
     std::string create_params_path_key)
-    : client_(client),
+    : delegate_(delegate),
       url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(context)
               ->GetURLLoaderFactoryForBrowserProcess()),
@@ -184,16 +174,16 @@ PlaylistMediaFileDownloader::PlaylistMediaFileDownloader(
       create_params_path_key_(create_params_path_key),
       weak_factory_(this) {}
 
-PlaylistMediaFileDownloader::~PlaylistMediaFileDownloader() {}
+PlaylistMediaFileDownloader::~PlaylistMediaFileDownloader() = default;
 
 void PlaylistMediaFileDownloader::NotifyFail() {
-  ResetStatus();
-  client_->OnMediaFileGenerationFailed(std::move(current_playlist_));
+  ResetDownloadStatus();
+  delegate_->OnMediaFileGenerationFailed(std::move(current_playlist_));
 }
 
 void PlaylistMediaFileDownloader::NotifySucceed(bool partial) {
-  ResetStatus();
-  client_->OnMediaFileReady(std::move(current_playlist_), partial);
+  ResetDownloadStatus();
+  delegate_->OnMediaFileReady(std::move(current_playlist_), partial);
 }
 
 void PlaylistMediaFileDownloader::GenerateSingleMediaFile(
@@ -201,9 +191,15 @@ void PlaylistMediaFileDownloader::GenerateSingleMediaFile(
     const base::FilePath& base_dir) {
   DCHECK(!in_progress_);
 
+  ResetDownloadStatus();
+  cancelled_ = false;
   in_progress_ = true;
   current_playlist_ = std::move(playlist_value);
-  current_playlist_id_ = *current_playlist_.FindStringKey(kPlaylistIDKey);
+
+  auto* id = current_playlist_.FindStringKey(kPlaylistIDKey);
+  DCHECK(id);
+  current_playlist_id_ = *id;
+
   remained_download_files_ = GetNumberOfMediaFileSources();
   media_file_source_files_count_ = remained_download_files_;
   if (media_file_source_files_count_ == 0) {
@@ -223,7 +219,7 @@ void PlaylistMediaFileDownloader::CreateSourceFilesDirThenDownloads() {
   const base::FilePath source_files_dir =
       playlist_dir_path_.Append(source_media_files_dir_);
   base::PostTaskAndReplyWithResult(
-      io_task_runner(), FROM_HERE,
+      task_runner(), FROM_HERE,
       base::BindOnce(&base::CreateDirectory, source_files_dir),
       base::BindOnce(&PlaylistMediaFileDownloader::OnSourceFilesDirCreated,
                      weak_factory_.GetWeakPtr()));
@@ -262,7 +258,7 @@ void PlaylistMediaFileDownloader::DownloadAllMediaFileSources() {
 }
 
 void PlaylistMediaFileDownloader::DownloadMediaFile(const GURL& url,
-                                                     int index) {
+                                                    int index) {
   VLOG(2) << __func__ << ": " << url.spec() << " at: " << index;
 
   auto request = std::make_unique<network::ResourceRequest>();
@@ -290,15 +286,15 @@ void PlaylistMediaFileDownloader::OnMediaFileDownloaded(
     SimpleURLLoaderList::iterator iter,
     int index,
     base::FilePath path) {
-  // When cancelled, we don't need to more for current job.
-  if (cancelled_)
-    return;
+  // When current media file generation is cancelled, all loaders are deleted.
+  // So, this callback will not be called.
+  DCHECK(!cancelled_);
 
   url_loaders_.erase(iter);
 
   if (path.empty()) {
     // This fail is handled during the generation.
-    // See |has_skipped_source_files| in DoGenerateSingleMediaFileOnIOThread().
+    // See |has_skipped_source_files| in DoGenerateSingleMediaFile().
     // |has_skipped_source_files| will be set to true.
     VLOG(1) << __func__ << ": failed to download media file at " << index;
   }
@@ -312,26 +308,30 @@ void PlaylistMediaFileDownloader::OnMediaFileDownloaded(
 
 void PlaylistMediaFileDownloader::RequestCancelCurrentPlaylistGeneration() {
   cancelled_ = true;
-  url_loaders_.clear();
+  ResetDownloadStatus();
 }
 
 void PlaylistMediaFileDownloader::StartSingleMediaFileGeneration() {
   base::PostTaskAndReplyWithResult(
-      io_task_runner(), FROM_HERE,
-      base::BindOnce(&DoGenerateSingleMediaFileOnIOThread, playlist_dir_path_,
+      task_runner(), FROM_HERE,
+      base::BindOnce(&DoGenerateSingleMediaFile, playlist_dir_path_,
                      source_media_files_dir_, unified_media_file_name_,
                      media_file_source_files_count_),
       base::BindOnce(&PlaylistMediaFileDownloader::OnSingleMediaFileGenerated,
                      weak_factory_.GetWeakPtr()));
 }
 
-void PlaylistMediaFileDownloader::OnSingleMediaFileGenerated(int result) {
-  if (cancelled_) {
-    ResetStatus();
+// TODO(simonhong): Delete partial ready.
+// If some of source files are not fetched properly, it should be treated as
+// fail.
+void PlaylistMediaFileDownloader::OnSingleMediaFileGenerated(
+    MediaFileGenResult result) {
+  // Could be cancelled after all source files are downloaded.
+  // Just silently end here.
+  if (cancelled_)
     return;
-  }
 
-  if (result != -1) {
+  if (result != MediaFileGenResult::FAILED) {
     base::FilePath media_file_path =
         playlist_dir_path_.Append(unified_media_file_name_);
     const std::string media_file_path_utf8 =
@@ -340,7 +340,7 @@ void PlaylistMediaFileDownloader::OnSingleMediaFileGenerated(int result) {
 #else
         media_file_path.value();
 #endif
-    const bool partial_ready = result == 1;
+    const bool partial_ready = result == MediaFileGenResult::PARTIAL_SUCCESS;
     current_playlist_.SetStringKey(media_file_path_key_, media_file_path_utf8);
     current_playlist_.SetBoolKey(kPlaylistPartialReadyKey, partial_ready);
     NotifySucceed(partial_ready);
@@ -351,19 +351,21 @@ void PlaylistMediaFileDownloader::OnSingleMediaFileGenerated(int result) {
   }
 }
 
-base::SequencedTaskRunner* PlaylistMediaFileDownloader::io_task_runner() {
-  if (!io_task_runner_) {
-    io_task_runner_ = base::CreateSequencedTaskRunner(
+base::SequencedTaskRunner* PlaylistMediaFileDownloader::task_runner() {
+  if (!task_runner_) {
+    task_runner_ = base::CreateSequencedTaskRunner(
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
-  return io_task_runner_.get();
+  return task_runner_.get();
 }
 
-void PlaylistMediaFileDownloader::ResetStatus() {
+void PlaylistMediaFileDownloader::ResetDownloadStatus() {
   in_progress_ = false;
-  cancelled_ = false;
+  remained_download_files_ = 0;
+  media_file_source_files_count_ = 0;
   current_playlist_id_.clear();
+  // current_playlist_ = base::Value();
   url_loaders_.clear();
 }
 

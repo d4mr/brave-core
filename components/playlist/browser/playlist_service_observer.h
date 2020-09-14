@@ -6,12 +6,11 @@
 #ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_OBSERVER_H_
 #define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_OBSERVER_H_
 
-#include <string>
-
 #include "base/observer_list_types.h"
-#include "brave/components/playlist/browser/playlist_types.h"
 
 namespace playlist {
+
+struct PlaylistChangeParams;
 
 class PlaylistServiceObserver : public base::CheckedObserver {
  public:
