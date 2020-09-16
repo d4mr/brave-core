@@ -59,7 +59,12 @@ class PlaylistMediaFileDownloadManager :
 
   const base::FilePath base_dir_;
   Delegate* delegate_;
+  // TODO(simonhong): Use another container. It's not good to handle cancel
+  // request.
   base::queue<base::Value> pending_media_file_creation_jobs_;
+
+  // TODO(simonhong): Unify these two downloader into one. Using two downloaders
+  // just increase complexity.
   std::unique_ptr<PlaylistMediaFileDownloader> video_media_file_downloader_;
   std::unique_ptr<PlaylistMediaFileDownloader> audio_media_file_downloader_;
 };

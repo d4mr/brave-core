@@ -285,6 +285,8 @@ void PlaylistService::DeletePlaylistItem(const std::string& id) {
   NotifyPlaylistChanged(
       {PlaylistChangeParams::ChangeType::CHANGE_TYPE_DELETED, id});
 
+  // TODO(simonhong): Delete after getting cancel complete message from all
+  // downloader.
   // Delete assets from filesystem after updating db.
   task_runner()->PostTask(
       FROM_HERE,

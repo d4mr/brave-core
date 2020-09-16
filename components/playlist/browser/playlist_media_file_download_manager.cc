@@ -53,9 +53,11 @@ void PlaylistMediaFileDownloadManager::CancelDownloadRequest(
   if (video_media_file_downloader_->current_playlist_id() == id) {
     video_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
     audio_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
-    return;
   }
 
+  // Bug - should schedule next generation job.
+  // Need to check each downloader completed cancel request.
+  // We should not ask new job before canel request completion.
   // TODO(simonhong): Remove from queue.
 }
 
@@ -113,10 +115,6 @@ void PlaylistMediaFileDownloadManager::OnMediaFileGenerationFailed(
   audio_media_file_downloader_->RequestCancelCurrentPlaylistGeneration();
 
   delegate_->OnMediaFileGenerationFailed(std::move(playlist_value));
- //  UpdatePlaylistValue(playlist_id, std::move(playlist_value));
-
- //  NotifyPlaylistChanged(
- //      {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED, playlist_id});
 
   if (!pending_media_file_creation_jobs_.empty())
     GenerateMediaFiles();

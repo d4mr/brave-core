@@ -34,6 +34,7 @@ class GURL;
 
 namespace playlist {
 
+// TODO(simonhong): Remove this. The result will have true/false simply.
 enum class MediaFileGenResult {
   FAILED,
   SUCCESS,  // All source files are unified into final media file.
@@ -46,6 +47,7 @@ class PlaylistMediaFileDownloader {
   class Delegate {
    public:
     // Called when target media file generation succeed.
+    // TODO(simonhong): Delete |partial|.
     virtual void OnMediaFileReady(base::Value playlist_value,
                                   bool partial) = 0;
     // Called when target media file generation failed.
