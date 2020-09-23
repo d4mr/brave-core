@@ -201,7 +201,9 @@ void PlaylistMediaFileDownloader::GenerateSingleMediaFile(
   media_file_source_files_count_ = remained_download_files_;
   if (media_file_source_files_count_ == 0) {
     VLOG(2) << __func__ << ": Empty media file source list";
-    NotifyFail(current_playlist_id_);
+    // Consider this as normal if youtubedown.js gives empty source list.
+    // Maybe this playlist only has audio or video. not both.
+    NotifySucceed(current_playlist_id_, media_file_path_key_, "");
     return;
   }
 

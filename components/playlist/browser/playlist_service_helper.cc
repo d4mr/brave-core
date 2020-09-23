@@ -22,14 +22,6 @@ base::Value GetValueFromMediaFile(const MediaFileInfo& info) {
   return media_file;
 }
 
-base::Value GetValueFromMediaFiles(
-    const std::vector<MediaFileInfo>& media_files) {
-  base::Value media_files_value(base::Value::Type::LIST);
-  for (const MediaFileInfo& info : media_files)
-    media_files_value.Append(GetValueFromMediaFile(info));
-  return media_files_value;
-}
-
 base::Value GetValueFromCreateParams(const CreatePlaylistParams& params) {
   base::Value create_params_value(base::Value::Type::DICTIONARY);
   create_params_value.SetStringKey(kPlaylistPlaylistThumbnailUrlKey,
@@ -51,6 +43,14 @@ base::Value GetTitleValueFromCreateParams(const CreatePlaylistParams& params) {
 }
 
 }  // namespace
+
+base::Value GetValueFromMediaFiles(
+    const std::vector<MediaFileInfo>& media_files) {
+  base::Value media_files_value(base::Value::Type::LIST);
+  for (const MediaFileInfo& info : media_files)
+    media_files_value.Append(GetValueFromMediaFile(info));
+  return media_files_value;
+}
 
 base::Value GetValueFromPlaylistInfo(const PlaylistInfo& info) {
   base::Value playlist_value(base::Value::Type::DICTIONARY);

@@ -14,6 +14,7 @@
 #include "brave/components/playlist/browser/features.h"
 #include "brave/components/playlist/browser/playlist_constants.h"
 #include "brave/components/playlist/browser/playlist_service.h"
+#include "brave/components/playlist/browser/playlist_service_helper.h"
 #include "brave/components/playlist/browser/playlist_service_observer.h"
 #include "brave/components/playlist/browser/playlist_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -150,7 +151,7 @@ class PlaylistBrowserTest : public InProcessBrowserTest,
     return params;
   }
 
-  CreatePlaylistParams GetValidCreateParamsForPartialReady() {
+  CreatePlaylistParams GetValidCreateParamsForIncompleteMediaFileList() {
     CreatePlaylistParams params;
     params.playlist_name = "Valid playlist creation params";
     params.playlist_thumbnail_url =
@@ -202,15 +203,13 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, CreatePlaylist) {
   auto* service = GetPlaylistService();
 
   // When a playlist is created and all goes well, we will receive 4
-  // notifications: added, thumbnail ready, play ready partial, and play ready.
+  // notifications: added, thumbnail ready and play ready.
   service->CreatePlaylistItem(GetValidCreateParams());
-  WaitForEvents(4);
+  WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY));
-  EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY_PARTIAL));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY));
 }
@@ -219,15 +218,13 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, CreatePlaylistWithSeparateAudio) {
   auto* service = GetPlaylistService();
 
   // When a playlist is created and all goes well, we will receive 4
-  // notifications: added, thumbnail ready, play ready partial, and play ready.
+  // notifications: added, thumbnail ready and play ready.
   service->CreatePlaylistItem(GetValidCreateParamsWithSeparateAudio());
-  WaitForEvents(4);
+  WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY));
-  EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY_PARTIAL));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY));
 }
@@ -236,16 +233,13 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ThumbnailFailed) {
   auto* service = GetPlaylistService();
 
   // When a playlist is created and the thumbnail can not be downloaded, we will
-  // receive 4 notifications: added, thumbnail failed, play ready partial, and
-  // aborted.
+  // receive 3 notifications: added, thumbnail failed and aborted.
   service->CreatePlaylistItem(GetInvalidCreateParams());
-  WaitForEvents(4);
+  WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_FAILED));
-  EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY_PARTIAL));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED));
 }
@@ -256,14 +250,14 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, MediaDownloadFailed) {
   // When a playlist is created and there are multiple media files to be
   // concatenated but one of the media files can not be downloaded, we will
   // receive 3 notifications: added, thumbnail ready, and play ready partial.
-  service->CreatePlaylistItem(GetValidCreateParamsForPartialReady());
+  service->CreatePlaylistItem(GetValidCreateParamsForIncompleteMediaFileList());
   WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY_PARTIAL));
+      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED));
 }
 
 IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
@@ -272,16 +266,16 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
   // // create playlist 1
   ResetStatus();
   service->CreatePlaylistItem(GetValidCreateParams());
-  WaitForEvents(4);
+  WaitForEvents(3);
 
   // // create playlist 2
   ResetStatus();
   service->CreatePlaylistItem(GetValidCreateParams());
-  WaitForEvents(4);
+  WaitForEvents(3);
 
   // create playlist 3 (will need recovery)
   ResetStatus();
-  service->CreatePlaylistItem(GetValidCreateParamsForPartialReady());
+  service->CreatePlaylistItem(GetValidCreateParamsForIncompleteMediaFileList());
   WaitForEvents(3);
 
   ResetStatus();
@@ -294,23 +288,45 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
       lastly_added_playlist_id_.compare(*item.FindStringKey(kPlaylistIDKey)),
       0);
 
-  // When a playlist is recovered, we should get 1 notification: partial ready.
-  // The playlist added and thumbnail added events are not sent.
+  // When we try to recover with same playlist item, we should get
+  // 1 notification: ABORTED because included media files are still
+  // invalid_media_file
   ResetStatus();
   service->RecoverPlaylistItem(lastly_added_playlist_id_);
   WaitForEvents(1);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY_PARTIAL));
+      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED));
+
+  // To simulate invalid media file url becomes valid, change media file url.
+  // With this, recovery process will get 1 READY notification.
+  ResetStatus();
+
+  std::vector<MediaFileInfo> video_media_files{
+      { https_server()->GetURL("song.com", "/valid_media_file_1").spec(), "" },
+      { https_server()->GetURL("song.com", "/valid_media_file_2").spec(), "" },
+  };
+  std::vector<MediaFileInfo> audio_media_files{
+      { https_server()->GetURL("song.com", "/valid_media_file_1").spec(), "" },
+      { https_server()->GetURL("song.com", "/valid_media_file_2").spec(), "" },
+  };
+
+  item.SetPath(kPlaylistCreateParamsVideoMediaFilesPathKey,
+               GetValueFromMediaFiles(video_media_files));
+  item.SetPath(kPlaylistCreateParamsAudioMediaFilesPathKey,
+               GetValueFromMediaFiles(audio_media_files));
+  service->UpdatePlaylistValue(lastly_added_playlist_id_, std::move(item));
+  service->RecoverPlaylistItem(lastly_added_playlist_id_);
+  WaitForEvents(1);
+  EXPECT_TRUE(IsPlaylistChangeTypeCalled(
+      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY));
 
   // When a playlist is deleted, we should get 1 notification: deleted.
   ResetStatus();
   service->DeletePlaylistItem(lastly_added_playlist_id_);
-  // WaitForEvents(1);
   EXPECT_EQ(1, on_playlist_changed_called_count_);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
       PlaylistChangeParams::ChangeType::CHANGE_TYPE_DELETED));
 
-  return;
   // After deleting one playlist, total playlist count should be 2.
   ResetStatus();
   items = service->GetAllPlaylistItems();

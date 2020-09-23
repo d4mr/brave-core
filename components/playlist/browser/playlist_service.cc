@@ -164,7 +164,6 @@ void PlaylistService::RemovePlaylist(const std::string& id) {
   playlist_items->Remove(id, nullptr);
 }
 
-// TODO(simonhong): Add basic validation for |params|.
 void PlaylistService::CreatePlaylistItem(const CreatePlaylistParams& params) {
   VLOG(2) << __func__;
   const PlaylistInfo info = CreatePlaylistInfo(params);

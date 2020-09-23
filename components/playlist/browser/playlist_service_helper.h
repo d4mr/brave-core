@@ -6,6 +6,8 @@
 #ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_HELPER_H_
 #define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_HELPER_H_
 
+#include <vector>
+
 namespace base {
 class Value;
 }
@@ -13,7 +15,10 @@ class Value;
 namespace playlist {
 
 struct PlaylistInfo;
+struct MediaFileInfo;
 
+base::Value GetValueFromMediaFiles(
+    const std::vector<MediaFileInfo>& media_files);
 base::Value GetValueFromPlaylistInfo(const PlaylistInfo& info);
 
 }  // namespace playlist

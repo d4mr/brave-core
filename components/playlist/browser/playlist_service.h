@@ -66,6 +66,13 @@ class PlaylistService : public KeyedService,
   void RequestDownload(const std::string& url);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(PlaylistBrowserTest, CreatePlaylist);
+  FRIEND_TEST_ALL_PREFIXES(PlaylistBrowserTest,
+                           CreatePlaylistWithSeparateAudio);
+  FRIEND_TEST_ALL_PREFIXES(PlaylistBrowserTest, ThumbnailFailed);
+  FRIEND_TEST_ALL_PREFIXES(PlaylistBrowserTest, MediaDownloadFailed);
+  FRIEND_TEST_ALL_PREFIXES(PlaylistBrowserTest, ApiFunctions);
+
   // KeyedService overrides:
   void Shutdown() override;
 
