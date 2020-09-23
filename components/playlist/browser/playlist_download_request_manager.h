@@ -38,6 +38,9 @@ class PlaylistDownloadRequestManager :
     virtual void OnPlaylistCreationParamsReady(
         const CreatePlaylistParams& params) = 0;
   };
+
+  static void SetPlaylistJavaScriptWorldId(const int32_t id);
+
   PlaylistDownloadRequestManager(content::BrowserContext* context,
                                  Delegate* delegate,
                                  PlaylistYoutubeDownComponentManager* manager);

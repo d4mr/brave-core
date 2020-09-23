@@ -6,6 +6,7 @@
 #ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
 #define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/containers/flat_map.h"

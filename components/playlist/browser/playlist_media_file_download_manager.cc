@@ -89,7 +89,7 @@ void PlaylistMediaFileDownloadManager::GenerateMediaFiles() {
 }
 
 base::Value PlaylistMediaFileDownloadManager::GetNextPlaylistItemTarget() {
-  while(!pending_media_file_creation_jobs_.empty()) {
+  while (!pending_media_file_creation_jobs_.empty()) {
     base::Value playlist_item(
         std::move(pending_media_file_creation_jobs_.front()));
     pending_media_file_creation_jobs_.pop();

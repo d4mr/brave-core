@@ -5,16 +5,24 @@
 
 #include "brave/components/playlist/browser/playlist_download_request_manager.h"
 
-#include "chrome/common/chrome_isolated_world_ids.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace playlist {
 
 namespace {
+
+const int32_t invalid_world_id = -1;
+
+int32_t playlist_javascript_world_id = invalid_world_id;
+
+bool PlaylistJavaScriptWorldIdIsSet() {
+  return playlist_javascript_world_id != invalid_world_id;
+}
 
 std::string GetScript(const std::string& youtubedown_script,
                       const std::string& url) {
@@ -23,6 +31,17 @@ std::string GetScript(const std::string& youtubedown_script,
 }
 
 }  // namespace
+
+// static
+void PlaylistDownloadRequestManager::SetPlaylistJavaScriptWorldId(
+    const int32_t id) {
+  // Never allow running in main world (0).
+  DCHECK(id > content::ISOLATED_WORLD_ID_GLOBAL);
+  // Only allow ID to be set once.
+  DCHECK(playlist_javascript_world_id == invalid_world_id);
+  playlist_javascript_world_id = id;
+}
+
 
 PlaylistDownloadRequestManager::PlaylistDownloadRequestManager(
     content::BrowserContext* context,
@@ -76,7 +95,7 @@ void PlaylistDownloadRequestManager::FetchAllPendingYoutubeURLs() {
   if (pending_youtube_urls_.empty())
     return;
 
-    // Run all pending request.
+  // Run all pending request.
   for (const auto& url : pending_youtube_urls_) {
     FetchYoutubeDownData(url);
   }
@@ -86,11 +105,13 @@ void PlaylistDownloadRequestManager::FetchAllPendingYoutubeURLs() {
 
 void PlaylistDownloadRequestManager::FetchYoutubeDownData(
     const std::string& url) const {
+  DCHECK(PlaylistJavaScriptWorldIdIsSet());
+
   webcontents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
       base::UTF8ToUTF16(GetScript(youtubedown_script_, url)),
       base::BindOnce(&PlaylistDownloadRequestManager::OnGetYoutubeDownData,
                      weak_factory_.GetWeakPtr()),
-      ISOLATED_WORLD_ID_CHROME_INTERNAL);
+      playlist_javascript_world_id);
 }
 
 bool PlaylistDownloadRequestManager::ReadyToRunYoutubeDownJS() const {

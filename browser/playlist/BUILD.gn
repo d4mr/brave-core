@@ -1,4 +1,7 @@
 source_set("playlist") {
+  # Set due to //chrome/browser and //chrome/browser/ui circular dependencies.
+  check_includes = false
+
   sources = [
     "playlist_service_factory.cc",
     "playlist_service_factory.h",
@@ -7,6 +10,7 @@ source_set("playlist") {
   deps = [
     "//base",
     "//brave/components/playlist/browser",
+    "//chrome/common",
     "//components/keyed_service/content",
     "//content/public/browser",
   ]

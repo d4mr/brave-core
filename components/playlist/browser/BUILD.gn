@@ -37,6 +37,7 @@ source_set("browser") {
     "//components/component_updater",
     "//components/user_prefs",
     "//content/public/browser",
+    "//content/public/common",
     "//crypto",
     "//services/network/public/cpp",
     "//services/preferences/public/cpp",

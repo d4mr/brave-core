@@ -5,6 +5,8 @@
 
 #include "brave/components/playlist/browser/playlist_thumbnail_downloader.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"

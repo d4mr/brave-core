@@ -7,6 +7,7 @@
 #define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/containers/queue.h"
 #include "brave/components/playlist/browser/playlist_media_file_downloader.h"
@@ -79,4 +80,4 @@ class PlaylistMediaFileDownloadManager :
 
 }  // namespace playlist
 
-#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_MEDIA_FILE_DOWNLOADE_MANAGER_H_
+#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
