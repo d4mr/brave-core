@@ -57,7 +57,6 @@ base::FilePath::StringType GetFileNameStringFromIndex(int index) {
 
 // Return false when source file is not appended properly.
 bool AppendToFileThenDeleteSource(const base::FilePath& source_path,
-                                  base::File* destination_file,
                                   const base::FilePath& destination_file_path,
                                   char* read_buffer,
                                   size_t read_buffer_size) {
@@ -65,22 +64,16 @@ bool AppendToFileThenDeleteSource(const base::FilePath& source_path,
   if (!source_file)
     return false;
 
-  // This size will be used to rollback current source file appending.
-  const int64_t dest_file_size = destination_file->GetLength();
-
   // Read |source_path|'s contents in chunks of read_buffer_size and append
-  // to |destination_file|.
-  size_t num_bytes_read;
+  // to |destination_file_path|.
+  size_t num_bytes_read = 0;
   bool got_error = false;
   while ((num_bytes_read =
               fread(read_buffer, 1, read_buffer_size, source_file.get())) > 0) {
     if (!base::AppendToFile(destination_file_path,
                             read_buffer,
                             num_bytes_read)) {
-      // Exclude source file if an error occurs during the appending by
-      // resetting dest file's previous file length.
-      destination_file->SetLength(dest_file_size);
-      VLOG(2) << __func__ << " file is excluded: " << source_path;
+      VLOG(2) << __func__ << " failed to append: " << source_path;
       got_error = true;
       break;
     }
@@ -105,13 +98,14 @@ bool DoGenerateSingleMediaFile(
       playlist_dir_path.Append(base::FilePath::StringType(
           unified_media_file_name.begin(), unified_media_file_name.end()));
 
+  // Prepare empty target file to append.
   base::DeleteFile(unified_media_file_path);
-
   base::File unified_media_file(
       unified_media_file_path,
       base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   if (!unified_media_file.IsValid())
     return false;
+  unified_media_file.Close();
 
   const size_t kReadBufferSize = 1 << 16;  // 64KiB
   char read_buffer[kReadBufferSize];
@@ -127,7 +121,6 @@ bool DoGenerateSingleMediaFile(
     }
 
     if (!AppendToFileThenDeleteSource(media_file_source_path,
-                                      &unified_media_file,
                                       unified_media_file_path,
                                       read_buffer,
                                       kReadBufferSize)) {
@@ -139,7 +132,7 @@ bool DoGenerateSingleMediaFile(
   // Delete source files dir.
   base::DeletePathRecursively(source_files_dir);
 
-  if (unified_media_file.GetLength() == 0 || failed) {
+  if (failed) {
     base::DeleteFile(unified_media_file_path);
     return false;
   }
@@ -292,6 +285,7 @@ void PlaylistMediaFileDownloader::OnMediaFileDownloaded(
     int index,
     base::FilePath path) {
   url_loaders_.erase(iter);
+  VLOG(2) << __func__ << ": downloaded media file at " << path;
 
   if (path.empty()) {
     // This fail is handled during the generation.
