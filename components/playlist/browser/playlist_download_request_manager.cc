@@ -68,10 +68,8 @@ void PlaylistDownloadRequestManager::OnYoutubeDownScriptReady(
     const std::string& youtubedown_script) {
   youtubedown_script_ = youtubedown_script;
 
-  if (!ReadyToRunYoutubeDownJS())
-    return;
-
-  FetchAllPendingYoutubeURLs();
+  if (ReadyToRunYoutubeDownJS())
+    FetchAllPendingYoutubeURLs();
 }
 
 void PlaylistDownloadRequestManager::FetchAllPendingYoutubeURLs() {
@@ -111,7 +109,8 @@ void PlaylistDownloadRequestManager::DidFinishLoad(
     webcontents_ready_ = true;
     Observe(nullptr);
 
-    FetchAllPendingYoutubeURLs();
+    if (ReadyToRunYoutubeDownJS())
+      FetchAllPendingYoutubeURLs();
   }
 }
 
