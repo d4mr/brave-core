@@ -26,14 +26,6 @@ using ntp_background_images::features::kBraveNTPBrandedWallpaper;
 using ntp_background_images::features::kBraveNTPBrandedWallpaperDemo;
 using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
 
-#define BRAVE_SKIP_CONDITIONAL_FEATURE_ENTRY                               \
-  if (!strcmp("playlist", entry.internal_name) &&                          \
-      channel != version_info::Channel::DEV &&                             \
-      channel != version_info::Channel::CANARY &&                          \
-      channel != version_info::Channel::UNKNOWN) {                         \
-    return true;                                                           \
-  }
-
 #if BUILDFLAG(ENABLE_PLAYLIST)
 #define PLAYLIST_FEATURE_ENTRIES                                           \
      {"playlist",                                                          \
@@ -116,7 +108,6 @@ using ntp_background_images::features::kBraveNTPSuperReferralWallpaper;
 #include "../../../../chrome/browser/about_flags.cc"  // NOLINT
 #undef SetFeatureEntryEnabled
 #undef BRAVE_FEATURE_ENTRIES
-#undef BRAVE_SKIP_CONDITIONAL_FEATURE_ENTRY
 
 namespace about_flags {
 
