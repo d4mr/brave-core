@@ -6,7 +6,6 @@
 #ifndef BRAVE_BROWSER_UI_WEBUI_PLAYLIST_UI_H_
 #define BRAVE_BROWSER_UI_WEBUI_PLAYLIST_UI_H_
 
-#include <memory>
 #include <string>
 
 #include "brave/browser/ui/webui/basic_ui.h"

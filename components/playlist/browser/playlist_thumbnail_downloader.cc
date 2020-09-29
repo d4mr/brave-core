@@ -7,8 +7,6 @@
 
 #include <utility>
 
-#include "base/files/file_path.h"
-#include "base/values.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

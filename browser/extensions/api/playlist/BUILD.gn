@@ -1,0 +1,27 @@
+import("//brave/components/playlist/buildflags/buildflags.gni")
+
+source_set("playlist") {
+  # Disabled due to //chrome/browser circular.
+  check_includes = false
+
+  sources = []
+  deps = []
+
+  if (enable_playlist) {
+    sources += [
+      "playlist_api.cc",
+      "playlist_api.h",
+      "playlist_event_router.cc",
+      "playlist_event_router.h",
+    ]
+
+    deps += [
+      "//base",
+      "//brave/browser/playlist",
+      "//brave/common/extensions/api",
+      "//brave/components/playlist/browser",
+      "//extensions/browser",
+    ]
+  }
+
+}

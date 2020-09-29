@@ -17,7 +17,6 @@ import("//brave/components/gemini/browser/buildflags/buildflags.gni")
 import("//brave/components/greaselion/browser/buildflags/buildflags.gni")
 import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//brave/components/moonpay/browser/buildflags/buildflags.gni")
-import("//brave/components/playlist/buildflags/buildflags.gni")
 import("//brave/components/speedreader/buildflags.gni")
 import("//brave/components/tor/buildflags/buildflags.gni")
 import("//brave/test/testing.gni")
@@ -80,6 +79,13 @@ source_set("test_support") {
       "//components/sync_preferences",
     ]
   }
+}
+
+group("other_browser_tests") {
+  testonly = true
+  deps = [
+    "//brave/browser/playlist/test:browser_tests",
+  ]
 }
 
 test("brave_unit_tests") {
@@ -689,6 +695,7 @@ if (!is_android) {
       "//brave/components/ipfs/test:brave_ipfs_browser_tests",
       "//brave/browser/ui/tabs/test:browser_tests",
       "//media:test_support",
+      ":other_browser_tests",
     ]
 
     if (enable_widevine && !is_asan) {

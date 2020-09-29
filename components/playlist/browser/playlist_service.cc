@@ -22,6 +22,7 @@
 #include "brave/components/playlist/browser/playlist_data_source.h"
 #include "brave/components/playlist/browser/playlist_service_helper.h"
 #include "brave/components/playlist/browser/playlist_service_observer.h"
+#include "brave/components/playlist/browser/playlist_types.h"
 #include "brave/components/playlist/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"

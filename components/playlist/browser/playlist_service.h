@@ -10,8 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -19,11 +18,9 @@
 #include "brave/components/playlist/browser/playlist_download_request_manager.h"
 #include "brave/components/playlist/browser/playlist_media_file_download_manager.h"
 #include "brave/components/playlist/browser/playlist_thumbnail_downloader.h"
-#include "brave/components/playlist/browser/playlist_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
-class FilePath;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -38,6 +35,7 @@ namespace playlist {
 
 class PlaylistServiceObserver;
 class PlaylistYoutubeDownComponentManager;
+struct CreatePlaylistParams;
 
 class PlaylistService : public KeyedService,
                         public PlaylistMediaFileDownloadManager::Delegate,

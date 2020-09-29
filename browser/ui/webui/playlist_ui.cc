@@ -18,6 +18,6 @@ PlaylistUI::PlaylistUI(content::WebUI* web_ui, const std::string& name)
               IDR_PLAYLIST_HTML) {
 }
 
-PlaylistUI::~PlaylistUI() {}
+PlaylistUI::~PlaylistUI() = default;
 
 }  // namespace playlist
