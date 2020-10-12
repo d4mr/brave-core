@@ -123,9 +123,6 @@ class PlaylistMediaFileDownloader {
   base::WeakPtrFactory<PlaylistMediaFileDownloader> weak_factory_;
 };
 
-// Delete this. Instead GetPlatformPathString();
-base::FilePath::StringType GetPlaylistIDDirName(const std::string& playlist_id);
-
 }  // namespace playlist
 
 #endif  // BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_MEDIA_FILE_DOWNLOADER_H_

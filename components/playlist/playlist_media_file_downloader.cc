@@ -19,6 +19,7 @@
 #include "base/task_runner_util.h"
 #include "brave/components/playlist/playlist_constants.h"
 #include "brave/components/playlist/playlist_types.h"
+#include "brave/components/playlist/playlist_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -142,15 +143,6 @@ bool DoGenerateSingleMediaFile(
 
 }  // namespace
 
-base::FilePath::StringType GetPlaylistIDDirName(
-    const std::string& playlist_id) {
-#if defined(OS_WIN)
-  return base::UTF8ToUTF16(playlist_id);
-#else
-  return playlist_id;
-#endif
-}
-
 PlaylistMediaFileDownloader::PlaylistMediaFileDownloader(
     Delegate* delegate,
     content::BrowserContext* context,
@@ -207,8 +199,7 @@ void PlaylistMediaFileDownloader::GenerateSingleMediaFile(
     return;
   }
 
-  playlist_dir_path_ =
-      base_dir.Append(GetPlaylistIDDirName(current_playlist_id_));
+  playlist_dir_path_ = base_dir.AppendASCII(current_playlist_id_);
 
   // Create PROFILE_DIR/playlist/ID/source_files dir to store each media files.
   // Then, downloads them in that directory.
@@ -331,13 +322,8 @@ void PlaylistMediaFileDownloader::OnSingleMediaFileGenerated(
   if (success) {
     base::FilePath media_file_path =
         playlist_dir_path_.Append(unified_media_file_name_);
-    const std::string media_file_path_utf8 =
-#if defined(OS_WIN)
-        base::UTF16ToUTF8(media_file_path.value());
-#else
-        media_file_path.value();
-#endif
-    NotifySucceed(id, media_file_path_key_, media_file_path_utf8);
+    NotifySucceed(id, media_file_path_key_,
+                  ConvertFilePathToUTF8(media_file_path));
   } else {
     NotifyFail(id);
   }

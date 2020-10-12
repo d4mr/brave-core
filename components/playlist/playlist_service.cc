@@ -23,6 +23,7 @@
 #include "brave/components/playlist/playlist_service_helper.h"
 #include "brave/components/playlist/playlist_service_observer.h"
 #include "brave/components/playlist/playlist_types.h"
+#include "brave/components/playlist/playlist_util.h"
 #include "brave/components/playlist/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -56,14 +57,7 @@ std::vector<base::FilePath> GetOrphanedPaths(
   std::vector<base::FilePath> orphaned_paths;
   base::FileEnumerator dirs(base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath name = dirs.Next(); !name.empty(); name = dirs.Next()) {
-    std::string base_name =
-#if defined(OS_WIN)
-        base::UTF16ToUTF8(name.BaseName().value());
-#else
-        name.BaseName().value();
-#endif
-
-    if (ids.find(base_name) == ids.end())
+    if (ids.find(ConvertFilePathToUTF8(name.BaseName())) == ids.end())
       orphaned_paths.push_back(name);
   }
   return orphaned_paths;
@@ -149,7 +143,7 @@ void PlaylistService::GenerateMediafileForPlaylistItem(
 
 base::FilePath PlaylistService::GetPlaylistItemDirPath(
     const std::string& id) const {
-  return base_dir_.Append(GetPlaylistIDDirName(id));
+  return base_dir_.AppendASCII(id);
 }
 
 void PlaylistService::UpdatePlaylistValue(const std::string& id,
@@ -226,19 +220,12 @@ void PlaylistService::OnThumbnailDownloaded(const std::string& id,
     return;
   }
 
-  const std::string thumbnail_path =
-// Delete this. Instead GetPlatformPathString();
-#if defined(OS_WIN)
-      base::UTF16ToUTF8(path.value());
-#else
-      path.value();
-#endif
-
   const base::Value* value = prefs_->Get(kPlaylistItems)->FindDictKey(id);
   DCHECK(value);
   if (value) {
     base::Value copied_value = value->Clone();
-    copied_value.SetStringKey(kPlaylistThumbnailPathKey, thumbnail_path);
+    copied_value.SetStringKey(kPlaylistThumbnailPathKey,
+                              ConvertFilePathToUTF8(path));
     UpdatePlaylistValue(id, std::move(copied_value));
     NotifyPlaylistChanged(
         {PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY, id});
