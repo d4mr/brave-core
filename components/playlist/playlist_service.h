@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_H_
-#define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_H_
+#ifndef BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_SERVICE_H_
+#define BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -15,9 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "brave/components/playlist/browser/playlist_download_request_manager.h"
-#include "brave/components/playlist/browser/playlist_media_file_download_manager.h"
-#include "brave/components/playlist/browser/playlist_thumbnail_downloader.h"
+#include "brave/components/playlist/playlist_download_request_manager.h"
+#include "brave/components/playlist/playlist_media_file_download_manager.h"
+#include "brave/components/playlist/playlist_thumbnail_downloader.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
@@ -138,4 +138,4 @@ class PlaylistService : public KeyedService,
 
 }  // namespace playlist
 
-#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_SERVICE_H_
+#endif  // BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_SERVICE_H_

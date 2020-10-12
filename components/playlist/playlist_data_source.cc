@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/playlist/browser/playlist_data_source.h"
+#include "brave/components/playlist/playlist_data_source.h"
 
 #include <memory>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/task_runner_util.h"
-#include "brave/components/playlist/browser/playlist_service.h"
+#include "brave/components/playlist/playlist_service.h"
 #include "url/gurl.h"
 
 namespace playlist {

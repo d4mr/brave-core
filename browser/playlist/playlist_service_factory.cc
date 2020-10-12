@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "brave/components/playlist/browser/features.h"
-#include "brave/components/playlist/browser/playlist_service.h"
-#include "brave/components/playlist/browser/playlist_download_request_manager.h"
-#include "brave/components/playlist/browser/playlist_youtubedown_component_manager.h"
+#include "brave/components/playlist/features.h"
+#include "brave/components/playlist/playlist_service.h"
+#include "brave/components/playlist/playlist_download_request_manager.h"
+#include "brave/components/playlist/playlist_youtubedown_component_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"

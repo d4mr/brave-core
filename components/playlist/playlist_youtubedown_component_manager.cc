@@ -3,13 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/playlist/browser/playlist_youtubedown_component_manager.h"
+#include "brave/components/playlist/playlist_youtubedown_component_manager.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
-#include "brave/components/playlist/browser/playlist_youtubedown_component_installer.h"
+#include "brave/components/playlist/playlist_youtubedown_component_installer.h"
 
 namespace playlist {
 

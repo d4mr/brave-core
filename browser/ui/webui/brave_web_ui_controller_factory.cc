@@ -48,7 +48,7 @@
 
 #if BUILDFLAG(ENABLE_PLAYLIST)
 #include "brave/browser/ui/webui/playlist_ui.h"
-#include "brave/components/playlist/browser/features.h"
+#include "brave/components/playlist/features.h"
 #endif
 
 using content::WebUI;

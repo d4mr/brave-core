@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_DOWNLOAD_REQUEST_MANAGER_H_
-#define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_DOWNLOAD_REQUEST_MANAGER_H_
+#ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_DOWNLOAD_REQUEST_MANAGER_H_
+#define BRAVE_COMPONENTS_PLAYLIST_BROWSER_DOWNLOAD_REQUEST_MANAGER_H_
 
 #include <list>
 #include <memory>
@@ -12,8 +12,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "brave/components/playlist/browser/playlist_types.h"
-#include "brave/components/playlist/browser/playlist_youtubedown_component_manager.h"
+#include "brave/components/playlist/playlist_types.h"
+#include "brave/components/playlist/playlist_youtubedown_component_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -86,4 +86,4 @@ class PlaylistDownloadRequestManager :
 
 }  // namespace playlist
 
-#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_DOWNLOAD_REQUEST_MANAGER_H_
+#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_DOWNLOAD_REQUEST_MANAGER_H_

@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
-#define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
+#ifndef BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
+#define BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
 
 #include <memory>
 #include <string>
@@ -59,4 +59,4 @@ class PlaylistThumbnailDownloader {
   Delegate* delegate_;
 };
 
-#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_THUMBNAIL_DOWNLOADER_H_
+#endif  // BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_THUMBNAIL_DOWNLOADER_H_

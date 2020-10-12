@@ -13,7 +13,7 @@
 #include "brave/components/brave_sync/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/browser/features.h"
-#include "brave/components/playlist/browser/features.h"
+#include "brave/components/playlist/features.h"
 #include "brave/components/playlist/buildflags/buildflags.h"
 #include "brave/components/speedreader/buildflags.h"
 #include "chrome/browser/profiles/profile.h"

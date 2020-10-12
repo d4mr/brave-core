@@ -3,14 +3,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
-#define BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
+#ifndef BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
+#define BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
 
 #include <memory>
 #include <string>
 
 #include "base/containers/queue.h"
-#include "brave/components/playlist/browser/playlist_media_file_downloader.h"
+#include "brave/components/playlist/playlist_media_file_downloader.h"
 
 namespace base {
 class Value;
@@ -80,4 +80,4 @@ class PlaylistMediaFileDownloadManager :
 
 }  // namespace playlist
 
-#endif  // BRAVE_COMPONENTS_PLAYLIST_BROWSER_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_
+#endif  // BRAVE_COMPONENTS_PLAYLIST_PLAYLIST_MEDIA_FILE_DOWNLOAD_MANAGER_H_

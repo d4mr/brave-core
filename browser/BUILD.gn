@@ -215,9 +215,7 @@ source_set("browser_process") {
   }
 
   if (enable_playlist) {
-    deps += [
-      "//brave/components/playlist/common",
-    ]
+    deps += [ "//brave/components/playlist" ]
   }
 
   if (!is_android) {

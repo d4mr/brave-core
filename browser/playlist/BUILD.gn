@@ -14,7 +14,7 @@ source_set("playlist") {
 
   deps = [
     "//base",
-    "//brave/components/playlist/browser",
+    "//brave/components/playlist",
     "//chrome/common",
     "//components/keyed_service/content",
     "//content/public/browser",

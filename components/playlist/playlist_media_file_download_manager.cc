@@ -3,14 +3,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/playlist/browser/playlist_media_file_download_manager.h"
+#include "brave/components/playlist/playlist_media_file_download_manager.h"
 
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "brave/components/playlist/browser/playlist_constants.h"
+#include "brave/components/playlist/playlist_constants.h"
 
 namespace playlist {
 

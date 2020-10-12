@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/playlist/browser/playlist_media_file_downloader.h"
+#include "brave/components/playlist/playlist_media_file_downloader.h"
 
 #include <algorithm>
 #include <utility>
@@ -17,8 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "brave/components/playlist/browser/playlist_constants.h"
-#include "brave/components/playlist/browser/playlist_types.h"
+#include "brave/components/playlist/playlist_constants.h"
+#include "brave/components/playlist/playlist_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

@@ -15,8 +15,8 @@
 #include "brave/browser/playlist/desktop_playlist_player.h"
 #include "brave/browser/playlist/playlist_service_factory.h"
 #include "brave/common/extensions/api/brave_playlist.h"
-#include "brave/components/playlist/browser/playlist_service.h"
-#include "brave/components/playlist/browser/playlist_types.h"
+#include "brave/components/playlist/playlist_service.h"
+#include "brave/components/playlist/playlist_types.h"
 #include "chrome/browser/profiles/profile.h"
 
 using playlist::CreatePlaylistParams;

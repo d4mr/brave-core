@@ -6,13 +6,9 @@
 import("//brave/components/playlist/buildflags/buildflags.gni")
 
 group("browser") {
-  deps = [
-    "//brave/components/playlist/buildflags"
-  ]
+  deps = [ "//brave/components/playlist/buildflags" ]
 
   if (enable_playlist) {
-    deps += [
-      "//brave/components/playlist/browser",
-    ]
+    deps += [ "//brave/components/playlist" ]
   }
 }

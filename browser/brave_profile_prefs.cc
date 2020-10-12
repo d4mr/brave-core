@@ -106,7 +106,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PLAYLIST)
-#include "brave/components/playlist/common/pref_names.h"
+#include "brave/components/playlist/pref_names.h"
 #endif
 
 using extensions::FeatureSwitch;

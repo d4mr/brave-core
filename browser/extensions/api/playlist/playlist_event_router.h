@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/scoped_observer.h"
-#include "brave/components/playlist/browser/playlist_service.h"
-#include "brave/components/playlist/browser/playlist_service_observer.h"
+#include "brave/components/playlist/playlist_service.h"
+#include "brave/components/playlist/playlist_service_observer.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 

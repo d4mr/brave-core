@@ -1,6 +1,6 @@
 import("//brave/build/config.gni")
 
-source_set("browser") {
+source_set("playlist") {
   sources = [
     "features.cc",
     "features.h",
@@ -26,12 +26,13 @@ source_set("browser") {
     "playlist_youtubedown_component_installer.h",
     "playlist_youtubedown_component_manager.cc",
     "playlist_youtubedown_component_manager.h",
+    "pref_names.cc",
+    "pref_names.h",
   ]
 
   deps = [
     "//base",
     "//brave/components/brave_component_updater/browser",
-    "//brave/components/playlist/common",
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/component_updater",
@@ -45,5 +46,5 @@ source_set("browser") {
     "//url",
   ]
 
-  public_deps = [ "../buildflags" ]
+  public_deps = [ "buildflags" ]
 }

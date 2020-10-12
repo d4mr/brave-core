@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/playlist/browser/playlist_youtubedown_component_installer.h"
+#include "brave/components/playlist/playlist_youtubedown_component_installer.h"
 
 #include <memory>
 #include <string>

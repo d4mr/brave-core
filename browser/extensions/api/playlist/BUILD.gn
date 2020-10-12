@@ -19,7 +19,7 @@ source_set("playlist") {
       "//base",
       "//brave/browser/playlist",
       "//brave/common/extensions/api",
-      "//brave/components/playlist/browser",
+      "//brave/components/playlist",
       "//extensions/browser",
     ]
   }

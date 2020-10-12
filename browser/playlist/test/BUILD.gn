@@ -17,7 +17,7 @@ source_set("browser_tests") {
     deps = [
       "//base",
       "//brave/browser/playlist",
-      "//brave/components/playlist/browser",
+      "//brave/components/playlist",
       "//chrome/browser/ui",
       "//chrome/test:test_support_ui",
       "//components/network_session_configurator/common",

@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/playlist/browser/playlist_service.h"
+#include "brave/components/playlist/playlist_service.h"
 
 #include <algorithm>
 #include <utility>
@@ -18,12 +18,12 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/token.h"
-#include "brave/components/playlist/browser/playlist_constants.h"
-#include "brave/components/playlist/browser/playlist_data_source.h"
-#include "brave/components/playlist/browser/playlist_service_helper.h"
-#include "brave/components/playlist/browser/playlist_service_observer.h"
-#include "brave/components/playlist/browser/playlist_types.h"
-#include "brave/components/playlist/common/pref_names.h"
+#include "brave/components/playlist/playlist_constants.h"
+#include "brave/components/playlist/playlist_data_source.h"
+#include "brave/components/playlist/playlist_service_helper.h"
+#include "brave/components/playlist/playlist_service_observer.h"
+#include "brave/components/playlist/playlist_types.h"
+#include "brave/components/playlist/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
