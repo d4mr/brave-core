@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "brave/browser/extensions/api/playlist/playlist_event_router_factory.h"
 #include "brave/components/playlist/features.h"
 #include "brave/components/playlist/playlist_service.h"
 #include "brave/components/playlist/playlist_download_request_manager.h"
@@ -26,9 +27,13 @@ PlaylistServiceFactory* PlaylistServiceFactory::GetInstance() {
 
 // static
 PlaylistService* PlaylistServiceFactory::GetForProfile(Profile* profile) {
-  if (base::FeatureList::IsEnabled(playlist::features::kPlaylist))
+  if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
+    // Create EventRouter here because it broadcasts PlaylistService's event.
+    PlaylistEventRouterFactory::GetInstance()->GetForProfile(profile);
+
     return static_cast<PlaylistService*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
+  }
 
   return nullptr;
 }

@@ -11,8 +11,8 @@ source_set("playlist") {
     sources += [
       "playlist_api.cc",
       "playlist_api.h",
-      "playlist_event_router.cc",
-      "playlist_event_router.h",
+      "playlist_event_router_factory.cc",
+      "playlist_event_router_factory.h",
     ]
 
     deps += [
@@ -20,6 +20,8 @@ source_set("playlist") {
       "//brave/browser/playlist",
       "//brave/common/extensions/api",
       "//brave/components/playlist",
+      "//components/keyed_service/content",
+      "//components/keyed_service/core",
       "//extensions/browser",
     ]
   }
