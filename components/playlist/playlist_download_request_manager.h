@@ -61,7 +61,7 @@ class PlaylistDownloadRequestManager :
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
-  // Will get date from youtube for downloading media files of |url| by
+  // Will get data from youtube for downloading media files of |url| by
   // injecting youtubedown.js.
   void FetchYoutubeDownData(const std::string& url) const;
   void OnGetYoutubeDownData(base::Value value);

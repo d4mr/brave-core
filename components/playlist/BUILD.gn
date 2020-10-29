@@ -28,16 +28,15 @@ source_set("playlist") {
     "playlist_youtubedown_component_installer.h",
     "playlist_youtubedown_component_manager.cc",
     "playlist_youtubedown_component_manager.h",
-    "pref_names.cc",
     "pref_names.h",
   ]
 
   deps = [
     "//base",
     "//brave/components/brave_component_updater/browser",
+    "//components/component_updater",
     "//components/keyed_service/core",
     "//components/prefs",
-    "//components/component_updater",
     "//components/user_prefs",
     "//content/public/browser",
     "//content/public/common",

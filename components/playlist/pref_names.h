@@ -10,7 +10,7 @@ namespace playlist {
 
 // Stores playlist item key-value pairs in a dict. Each item has unique key and
 // it's metadata(such as, title, media file path and etc..).
-extern const char kPlaylistItems[];
+constexpr char kPlaylistItems[] = "brave.playlist.items";
 
 }  // namespace playlist
 
