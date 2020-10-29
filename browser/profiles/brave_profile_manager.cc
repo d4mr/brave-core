@@ -21,6 +21,7 @@
 #include "brave/components/brave_wallet/buildflags/buildflags.h"
 #include "brave/components/brave_webtorrent/browser/buildflags/buildflags.h"
 #include "brave/components/ipfs/buildflags/buildflags.h"
+#include "brave/components/playlist/buildflags/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
 #include "brave/components/tor/pref_names.h"
 #include "brave/components/tor/tor_constants.h"
@@ -67,6 +68,10 @@
 
 #if BUILDFLAG(ENABLE_TOR)
 #include "brave/browser/tor/tor_profile_service_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLAYLIST)
+#include "brave/browser/extensions/api/playlist/playlist_event_router_factory.h"
 #endif
 
 using content::BrowserThread;
@@ -164,6 +169,10 @@ void BraveProfileManager::DoFinalInitForServices(Profile* profile,
       gcm::BraveGCMChannelStatus::GetForProfile(profile);
   DCHECK(status);
   status->UpdateGCMDriverStatus();
+#endif
+#if BUILDFLAG(ENABLE_PLAYLIST)
+  playlist::PlaylistEventRouterFactory::GetInstance()->
+      GetForBrowserContext(profile);
 #endif
 }
 

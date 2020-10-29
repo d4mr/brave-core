@@ -11,15 +11,14 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
-
 namespace playlist {
 class PlaylistService;
 class PlaylistYoutubeDownComponentManager;
 
 class PlaylistServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static PlaylistService* GetForProfile(Profile* profile);
+  static PlaylistService* GetForBrowserContext(
+      content::BrowserContext* context);
   static PlaylistServiceFactory* GetInstance();
 
   PlaylistServiceFactory(const PlaylistServiceFactory&) = delete;

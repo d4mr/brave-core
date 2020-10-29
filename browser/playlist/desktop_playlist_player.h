@@ -8,14 +8,16 @@
 
 #include <string>
 
-class Profile;
+namespace content {
+class BrowserContext;
+}  // content
 
 namespace playlist {
 
 // Demo purpose player on desktop.
 class DesktopPlaylistPlayer {
  public:
-  explicit DesktopPlaylistPlayer(Profile* profile);
+  explicit DesktopPlaylistPlayer(content::BrowserContext* context);
   ~DesktopPlaylistPlayer();
 
   DesktopPlaylistPlayer(const DesktopPlaylistPlayer&) = delete;
@@ -24,7 +26,7 @@ class DesktopPlaylistPlayer {
   void Play(const std::string& id);
 
  private:
-  Profile* profile_;
+  content::BrowserContext* context_;
 };
 
 }  // namespace playlist

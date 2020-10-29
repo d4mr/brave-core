@@ -9,8 +9,6 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
-
 namespace content {
 class BrowserContext;
 }  // namespace content
@@ -22,7 +20,7 @@ class PlaylistEventRouterFactory : public BrowserContextKeyedServiceFactory {
   class PlaylistEventRouter;
 
   static PlaylistEventRouterFactory* GetInstance();
-  PlaylistEventRouter* GetForProfile(Profile* profile);
+  PlaylistEventRouter* GetForBrowserContext(content::BrowserContext* context);
 
   PlaylistEventRouterFactory(
       const PlaylistEventRouterFactory&) = delete;

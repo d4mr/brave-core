@@ -8,13 +8,11 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "brave/browser/extensions/api/playlist/playlist_event_router_factory.h"
 #include "brave/components/playlist/features.h"
 #include "brave/components/playlist/playlist_service.h"
 #include "brave/components/playlist/playlist_download_request_manager.h"
 #include "brave/components/playlist/playlist_youtubedown_component_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -26,13 +24,11 @@ PlaylistServiceFactory* PlaylistServiceFactory::GetInstance() {
 }
 
 // static
-PlaylistService* PlaylistServiceFactory::GetForProfile(Profile* profile) {
+PlaylistService* PlaylistServiceFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
-    // Create EventRouter here because it broadcasts PlaylistService's event.
-    PlaylistEventRouterFactory::GetInstance()->GetForProfile(profile);
-
     return static_cast<PlaylistService*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
+        GetInstance()->GetServiceForBrowserContext(context, true));
   }
 
   return nullptr;

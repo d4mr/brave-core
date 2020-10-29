@@ -17,7 +17,6 @@
 #include "brave/common/extensions/api/brave_playlist.h"
 #include "brave/components/playlist/playlist_service.h"
 #include "brave/components/playlist/playlist_types.h"
-#include "chrome/browser/profiles/profile.h"
 
 using playlist::CreatePlaylistParams;
 using playlist::PlaylistService;
@@ -38,8 +37,7 @@ constexpr char kNotExistPlaylistError[] = "Playlist does not exist";
 constexpr char kFeatureDisabled[] = "Playlist feature is disabled";
 
 PlaylistService* GetPlaylistService(content::BrowserContext* context) {
-  return PlaylistServiceFactory::GetInstance()->GetForProfile(
-      Profile::FromBrowserContext(context));
+  return PlaylistServiceFactory::GetInstance()->GetForBrowserContext(context);
 }
 
 }  // namespace
@@ -144,8 +142,7 @@ ExtensionFunction::ResponseAction BravePlaylistPlayItemFunction::Run() {
   std::unique_ptr<PlayItem::Params> params(PlayItem::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  playlist::DesktopPlaylistPlayer player(
-      Profile::FromBrowserContext(browser_context()));
+  playlist::DesktopPlaylistPlayer player(browser_context());
   player.Play(params->id);
   return RespondNow(NoArguments());
 }

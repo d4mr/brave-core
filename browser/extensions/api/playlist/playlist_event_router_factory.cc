@@ -12,9 +12,9 @@
 #include "base/scoped_observer.h"
 #include "brave/browser/playlist/playlist_service_factory.h"
 #include "brave/common/extensions/api/brave_playlist.h"
+#include "brave/components/playlist/features.h"
 #include "brave/components/playlist/playlist_service.h"
 #include "brave/components/playlist/playlist_service_observer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
@@ -28,8 +28,7 @@ namespace playlist {
 namespace {
 
 PlaylistService* GetPlaylistService(content::BrowserContext* context) {
-  return PlaylistServiceFactory::GetInstance()->GetForProfile(
-      Profile::FromBrowserContext(context));
+  return PlaylistServiceFactory::GetInstance()->GetForBrowserContext(context);
 }
 
 }  // namespace
@@ -53,10 +52,10 @@ class PlaylistEventRouterFactory::PlaylistEventRouter :
   // extensions::EventRouter::Observer overrides:
   void OnListenerAdded(const extensions::EventListenerInfo& details) override {
     DCHECK_EQ(details.event_name, OnPlaylistItemStatusChanged::kEventName);
-    if (auto* service = GetPlaylistService(context_)) {
-      observed_.Add(service);
-      extensions::EventRouter::Get(context_)->UnregisterObserver(this);
-    }
+    auto* service = GetPlaylistService(context_);
+    DCHECK(service);
+    observed_.Add(service);
+    extensions::EventRouter::Get(context_)->UnregisterObserver(this);
   }
 
   // PlaylistServiceObserver overrides:
@@ -86,9 +85,16 @@ PlaylistEventRouterFactory* PlaylistEventRouterFactory::GetInstance() {
 
 // static
 PlaylistEventRouterFactory::PlaylistEventRouter*
-PlaylistEventRouterFactory::GetForProfile(Profile* profile) {
+PlaylistEventRouterFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
+  if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
+    return static_cast<PlaylistEventRouter*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
+  }
+
+  return nullptr;
   return static_cast<PlaylistEventRouter*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 PlaylistEventRouterFactory::PlaylistEventRouterFactory()
