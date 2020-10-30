@@ -345,6 +345,7 @@ void PlaylistMediaFileDownloader::ResetDownloadStatus() {
   current_playlist_id_.clear();
   current_playlist_ = base::Value();
   url_loaders_.clear();
+  playlist_dir_path_.clear();
 }
 
 bool PlaylistMediaFileDownloader::IsDownloadFinished() {

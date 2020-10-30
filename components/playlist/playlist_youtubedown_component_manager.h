@@ -23,7 +23,7 @@ namespace playlist {
 
 class PlaylistYoutubeDownComponentManager {
  public:
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Called when |youtubedown_script_| is initialized or updated.
     virtual void OnYoutubeDownScriptReady(
@@ -53,7 +53,7 @@ class PlaylistYoutubeDownComponentManager {
   bool register_requested_ = false;
   component_updater::ComponentUpdateService* component_update_service_;
   std::string youtubedown_script_;
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<Observer> observer_list_;
   base::WeakPtrFactory<PlaylistYoutubeDownComponentManager> weak_factory_{this};
 };
 

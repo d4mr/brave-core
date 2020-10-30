@@ -69,6 +69,13 @@ class PlaylistDownloadRequestManager :
   void CreateWebContents();
   void FetchAllPendingYoutubeURLs();
 
+  // When we store youtube song, youtubedown js uses youtube song's url to fetch
+  // it's metadata such as media file resource urls and thumbnail url.
+  // and youtubedown js is injected to |webcontents_|.
+  // We create |webcontents_| on demand. So, when youtube download is requested,
+  // |webcontents_| may not be ready to inject youtubedown js.
+  // This list caches already requested youtube song urls and used after
+  // |webcontents_| is ready to use.
   std::list<std::string> pending_youtube_urls_;
   // Used to inject youtubedown.js to get playlist item metadata to download
   // its media files/thumbnail mages and get titile.

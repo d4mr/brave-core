@@ -18,6 +18,7 @@
 #include "brave/components/playlist/playlist_service_observer.h"
 #include "brave/components/playlist/playlist_types.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/test/browser_test.h"
@@ -103,7 +104,7 @@ class PlaylistBrowserTest : public InProcessBrowserTest,
   }
 
   PlaylistService* GetPlaylistService() {
-    return PlaylistServiceFactory::GetInstance()->GetForProfile(
+    return PlaylistServiceFactory::GetInstance()->GetForBrowserContext(
         browser()->profile());
   }
 

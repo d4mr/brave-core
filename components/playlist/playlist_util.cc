@@ -11,7 +11,7 @@ namespace playlist {
 
 std::string ConvertFilePathToUTF8(const base::FilePath& path) {
 #if defined(OS_WIN)
-  return base::UTF16ToUTF8(path.value());
+  return path.AsUTF8Unsafe();
 #else
   return path.value();
 #endif
