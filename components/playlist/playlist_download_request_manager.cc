@@ -5,6 +5,8 @@
 
 #include "brave/components/playlist/playlist_download_request_manager.h"
 
+#include "base/bind.h"
+#include "base/time/time.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -15,6 +17,9 @@
 namespace playlist {
 
 namespace {
+
+constexpr base::TimeDelta kWebContentDestroyDelay =
+    base::TimeDelta::FromMinutes(5);
 
 const int32_t invalid_world_id = -1;
 
@@ -61,7 +66,6 @@ void PlaylistDownloadRequestManager::CreateWebContents() {
     return;
 
   // |webcontents_| is created on demand.
-  // TODO(simonhong): Destroy |webcontents_| when idle.
   constexpr char kYoutubeURL[] = "https://www.youtube.com/";
   content::WebContents::CreateParams create_params(context_, nullptr);
   webcontents_ = content::WebContents::Create(create_params);
@@ -72,6 +76,8 @@ void PlaylistDownloadRequestManager::CreateWebContents() {
 
 void PlaylistDownloadRequestManager::GeneratePlaylistCreateParamsForYoutubeURL(
     const std::string& url) {
+  webcontents_destroy_timer_.reset();
+
   if (!ReadyToRunYoutubeDownJS()) {
     pending_youtube_urls_.push_back(url);
 
@@ -104,8 +110,11 @@ void PlaylistDownloadRequestManager::FetchAllPendingYoutubeURLs() {
 }
 
 void PlaylistDownloadRequestManager::FetchYoutubeDownData(
-    const std::string& url) const {
+    const std::string& url) {
   DCHECK(PlaylistJavaScriptWorldIdIsSet());
+
+  DCHECK(in_progress_urls_count_ >= 0);
+  in_progress_urls_count_++;
 
   webcontents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
       base::UTF8ToUTF16(GetScript(youtubedown_script_, url)),
@@ -136,6 +145,12 @@ void PlaylistDownloadRequestManager::DidFinishLoad(
 }
 
 void PlaylistDownloadRequestManager::OnGetYoutubeDownData(base::Value value) {
+  DCHECK(in_progress_urls_count_ > 0);
+  in_progress_urls_count_--;
+
+  if (in_progress_urls_count_ == 0)
+    ScheduleWebContentsDestroying();
+
   if (!value.is_list()) {
     LOG(ERROR) << __func__ << " Got invalid value after running youtubedown.js";
     return;
@@ -170,4 +185,18 @@ void PlaylistDownloadRequestManager::OnGetYoutubeDownData(base::Value value) {
 
   delegate_->OnPlaylistCreationParamsReady(p);
 }
+
+void PlaylistDownloadRequestManager::ScheduleWebContentsDestroying() {
+  DCHECK(!webcontents_destroy_timer_);
+  webcontents_destroy_timer_.reset(new base::OneShotTimer);
+  webcontents_destroy_timer_->Start(
+      FROM_HERE, kWebContentDestroyDelay,
+      base::BindOnce(&PlaylistDownloadRequestManager::DestroyWebContents,
+                     base::Unretained(this)));
+}
+
+void PlaylistDownloadRequestManager::DestroyWebContents() {
+  webcontents_.reset();
+}
+
 }  // namespace playlist

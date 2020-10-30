@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace base {
+class OneShotTimer;
 class Value;
 }  // namespace base
 
@@ -63,11 +64,14 @@ class PlaylistDownloadRequestManager :
 
   // Will get data from youtube for downloading media files of |url| by
   // injecting youtubedown.js.
-  void FetchYoutubeDownData(const std::string& url) const;
+  void FetchYoutubeDownData(const std::string& url);
   void OnGetYoutubeDownData(base::Value value);
   bool ReadyToRunYoutubeDownJS() const;
   void CreateWebContents();
   void FetchAllPendingYoutubeURLs();
+
+  void ScheduleWebContentsDestroying();
+  void DestroyWebContents();
 
   // When we store youtube song, youtubedown js uses youtube song's url to fetch
   // it's metadata such as media file resource urls and thumbnail url.
@@ -81,12 +85,17 @@ class PlaylistDownloadRequestManager :
   // its media files/thumbnail mages and get titile.
   std::unique_ptr<content::WebContents> webcontents_;
   bool webcontents_ready_ = false;
+  // The number of requested youtubedown data fetching.
+  // If it's zero, all requested fetching are completed. Then |webcontents_|
+  // destroying task will be scheduled.
+  int in_progress_urls_count_ = 0;
   std::string youtubedown_script_;
   content::BrowserContext* context_;
   Delegate* delegate_;
   PlaylistYoutubeDownComponentManager* youtubedown_component_manager_;
   ScopedObserver<PlaylistYoutubeDownComponentManager,
                  PlaylistYoutubeDownComponentManager::Observer> observed_{this};
+  std::unique_ptr<base::OneShotTimer> webcontents_destroy_timer_;
 
   base::WeakPtrFactory<PlaylistDownloadRequestManager> weak_factory_{this};
 };
