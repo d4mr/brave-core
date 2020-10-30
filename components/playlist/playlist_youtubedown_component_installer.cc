@@ -23,7 +23,13 @@ namespace playlist {
 
 namespace {
 
-constexpr char kComponentPublicKey[] = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0l8glPqaai2KyD+R2KoJaaWv7Lafg2aWijf78E7i5ta4AxL5hMEIXlXA1bJupyDuPWOXH8LAItlgdbJh8xiDzrX7uj4Nr+UiWOrQwd6YorvnqHRDzN1NEQBI2gL6IuA22/vNsXKAemu0lS2Gd3FkShuKUJPljdjAskfgn/NHnDUWqxESb3N6d+shcJw53Tm+nwcxdyDOet6p+VMugIMiUAbb+EhfEmx4iEhJC9XTpl6yjRNzCwaNhcsXrO9UpdaxZYSYceCm/BKd5TyxNr2MVjGYWKdA1nemhXdz1zvy76ZAUCYPLcSyyKgx5KiJnB8mhtXUWFXw5qMzxOoIzAjHeQIDAQAB";  // NOLINT
+constexpr char kComponentPublicKey[] =
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0l8glPqaai2KyD+R2KoJaaWv7Lafg2"
+    "aWijf78E7i5ta4AxL5hMEIXlXA1bJupyDuPWOXH8LAItlgdbJh8xiDzrX7uj4Nr+UiWOrQwd6Y"
+    "orvnqHRDzN1NEQBI2gL6IuA22/vNsXKAemu0lS2Gd3FkShuKUJPljdjAskfgn/NHnDUWqxESb3"
+    "N6d+shcJw53Tm+nwcxdyDOet6p+VMugIMiUAbb+EhfEmx4iEhJC9XTpl6yjRNzCwaNhcsXrO9U"
+    "pdaxZYSYceCm/BKd5TyxNr2MVjGYWKdA1nemhXdz1zvy76ZAUCYPLcSyyKgx5KiJnB8mhtXUWF"
+    "Xw5qMzxOoIzAjHeQIDAQAB";
 constexpr char kComponentID[] = "jccpmjhflblpphnhgemhlllckflnipjn";
 constexpr char kComponentName[] = "youtubedown.js";
 
