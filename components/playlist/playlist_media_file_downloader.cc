@@ -19,7 +19,6 @@
 #include "base/task_runner_util.h"
 #include "brave/components/playlist/playlist_constants.h"
 #include "brave/components/playlist/playlist_types.h"
-#include "brave/components/playlist/playlist_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -322,8 +321,7 @@ void PlaylistMediaFileDownloader::OnSingleMediaFileGenerated(
   if (success) {
     base::FilePath media_file_path =
         playlist_dir_path_.Append(unified_media_file_name_);
-    NotifySucceed(id, media_file_path_key_,
-                  ConvertFilePathToUTF8(media_file_path));
+    NotifySucceed(id, media_file_path_key_, media_file_path.AsUTF8Unsafe());
   } else {
     NotifyFail(id);
   }

@@ -22,8 +22,6 @@ source_set("playlist") {
     "playlist_thumbnail_downloader.h",
     "playlist_types.cc",
     "playlist_types.h",
-    "playlist_util.cc",
-    "playlist_util.h",
     "playlist_youtubedown_component_installer.cc",
     "playlist_youtubedown_component_installer.h",
     "playlist_youtubedown_component_manager.cc",

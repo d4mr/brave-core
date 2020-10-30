@@ -23,7 +23,6 @@
 #include "brave/components/playlist/playlist_service_helper.h"
 #include "brave/components/playlist/playlist_service_observer.h"
 #include "brave/components/playlist/playlist_types.h"
-#include "brave/components/playlist/playlist_util.h"
 #include "brave/components/playlist/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
@@ -57,7 +56,7 @@ std::vector<base::FilePath> GetOrphanedPaths(
   std::vector<base::FilePath> orphaned_paths;
   base::FileEnumerator dirs(base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath name = dirs.Next(); !name.empty(); name = dirs.Next()) {
-    if (ids.find(ConvertFilePathToUTF8(name.BaseName())) == ids.end())
+    if (ids.find(name.BaseName().AsUTF8Unsafe()) == ids.end())
       orphaned_paths.push_back(name);
   }
   return orphaned_paths;
@@ -224,8 +223,7 @@ void PlaylistService::OnThumbnailDownloaded(const std::string& id,
   DCHECK(value);
   if (value) {
     base::Value copied_value = value->Clone();
-    copied_value.SetStringKey(kPlaylistThumbnailPathKey,
-                              ConvertFilePathToUTF8(path));
+    copied_value.SetStringKey(kPlaylistThumbnailPathKey, path.AsUTF8Unsafe());
     UpdatePlaylistValue(id, std::move(copied_value));
     NotifyPlaylistChanged(
         {PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY, id});
