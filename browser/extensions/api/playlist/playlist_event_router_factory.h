@@ -15,6 +15,8 @@ class BrowserContext;
 
 namespace playlist {
 
+// PlaylistEventRouter relays playlist service's event to extensions event.
+// With this, internal webui/extensions can get playlist status change.
 class PlaylistEventRouterFactory : public BrowserContextKeyedServiceFactory {
  public:
   class PlaylistEventRouter;

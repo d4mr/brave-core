@@ -37,6 +37,22 @@ class PlaylistServiceObserver;
 class PlaylistYoutubeDownComponentManager;
 struct CreatePlaylistParams;
 
+// This class is key interace for playlist. Client will ask any playlist related
+// requests to this class.
+// This handles youtube playlist download request by orchestrating three other
+// classes. They are PlaylistMediaFileDownloadManager,
+// PlaylistThunbnailDownloadManager and PlaylistDownloadRequestManager.
+// PlaylistService owns all these managers.
+// This notifies each playlist's status to users via PlaylistServiceObserver.
+
+// Playlist download request is started by calling RequestDownload() from
+// client. Passed argument is youtube url. Then, PlaylistDownloadRequestManager
+// gives meta data. That meta data has urls for playlist item's audio/video
+// media file urls and thumbnail url.
+// Next, PlaylistService asks downloading audio/video media files and thumbnails
+// to PlaylistMediaFileDownloadManager and PlaylistThumbnailDownloader.
+// When each of data is ready to use it's notified to client.
+// You can see all notification type - PlaylistChangeParams::ChangeType.
 class PlaylistService : public KeyedService,
                         public PlaylistMediaFileDownloadManager::Delegate,
                         public PlaylistThumbnailDownloader::Delegate,
@@ -53,6 +69,7 @@ class PlaylistService : public KeyedService,
   void RecoverPlaylistItem(const std::string& id);
   void DeletePlaylistItem(const std::string& id);
   void DeleteAllPlaylistItems();
+  void RequestDownload(const std::string& url);
 
   void AddObserver(PlaylistServiceObserver* observer);
   void RemoveObserver(PlaylistServiceObserver* observer);
@@ -60,8 +77,6 @@ class PlaylistService : public KeyedService,
   bool GetThumbnailPath(const std::string& id, base::FilePath* thumbnail_path);
 
   base::FilePath GetPlaylistItemDirPath(const std::string& id) const;
-
-  void RequestDownload(const std::string& url);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PlaylistBrowserTest, CreatePlaylist);
@@ -75,6 +90,7 @@ class PlaylistService : public KeyedService,
   void Shutdown() override;
 
   // PlaylistMediaFileDownloadManager::Delegate overrides:
+  // Called when all audio/video media file are downloaded.
   void OnMediaFileReady(const std::string& id,
                         const std::string& audio_file_path,
                         const std::string& video_file_path) override;
@@ -82,12 +98,16 @@ class PlaylistService : public KeyedService,
   bool IsValidPlaylistItem(const std::string& id) override;
 
   // PlaylistThumbnailDownloader::Delegate overrides:
+  // Called when thumbnail image file is downloaded.
   void OnThumbnailDownloaded(const std::string& id,
                              const base::FilePath& path) override;
 
   // PlaylistDownloadRequestManager::Delegate overrides:
+  // Called when meta data is ready. |params| have playlist item's audio/video
+  // media files url, thumbnail and title.
   void OnPlaylistCreationParamsReady(
       const CreatePlaylistParams& params) override;
+
   void OnPlaylistItemDirCreated(const std::string& id, bool directory_ready);
 
   void CreatePlaylistItem(const CreatePlaylistParams& params);

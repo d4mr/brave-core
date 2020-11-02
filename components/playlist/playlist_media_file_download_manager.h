@@ -22,6 +22,10 @@ class BrowserContext;
 
 namespace playlist {
 
+// Download youtube playlist item's audio/video media files.
+// This handles one request at once. So, it has pending queue.
+// And PlaylistMediaFileDownloader does file download task.
+// TODO(simonhong): Download multiple media files simultaneously.
 class PlaylistMediaFileDownloadManager :
     public PlaylistMediaFileDownloader::Delegate {
  public:

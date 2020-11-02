@@ -30,6 +30,8 @@ namespace playlist {
 
 struct CreatePlaylistParams;
 
+// This class fetches each youtube playlist item's audio/video/thumbnail url and
+// it's title by injecting youtubedown.js script to dedicated WebContents.
 class PlaylistDownloadRequestManager :
     public PlaylistYoutubeDownComponentManager::Observer,
     public content::WebContentsObserver {
