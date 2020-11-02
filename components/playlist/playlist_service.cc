@@ -65,9 +65,8 @@ std::vector<base::FilePath> GetOrphanedPaths(
 bool DoGenerateHTMLFileOnTaskRunner(const base::FilePath& html_file_path) {
   constexpr char kHTMLTemplate[] =
       "<video id='v' controls autoplay "
-      "onplay='a=document.getElementById(\"a\");a.currentTime=this.currentTime;a."
-      "play();' "
-      "onpause='a=document.getElementById(\"a\");a.pause()'><source "
+      "onplay='a=document.getElementById(\"a\");a.currentTime=this.currentTime;"
+      "a.play();' onpause='a=document.getElementById(\"a\");a.pause()'><source "
       "src='video_file.mp4' type='video/mp4' /></video> <video id='a' autoplay "
       "style='display:none'><source src='audio_file.m4a' type='audio/mp4' "
       "/></video>";

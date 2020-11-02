@@ -88,7 +88,7 @@ class PlaylistDownloadRequestManager :
   // The number of requested youtubedown data fetching.
   // If it's zero, all requested fetching are completed. Then |webcontents_|
   // destroying task will be scheduled.
-  int in_progress_urls_count_ = 0;
+  int in_progress_youtube_urls_count_ = 0;
   std::string youtubedown_script_;
   content::BrowserContext* context_;
   Delegate* delegate_;

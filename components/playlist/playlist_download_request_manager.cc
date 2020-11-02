@@ -113,8 +113,8 @@ void PlaylistDownloadRequestManager::FetchYoutubeDownData(
     const std::string& url) {
   DCHECK(PlaylistJavaScriptWorldIdIsSet());
 
-  DCHECK(in_progress_urls_count_ >= 0);
-  in_progress_urls_count_++;
+  DCHECK_GE(in_progress_youtube_urls_count_, 0);
+  in_progress_youtube_urls_count_++;
 
   webcontents_->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(
       base::UTF8ToUTF16(GetScript(youtubedown_script_, url)),
@@ -145,10 +145,10 @@ void PlaylistDownloadRequestManager::DidFinishLoad(
 }
 
 void PlaylistDownloadRequestManager::OnGetYoutubeDownData(base::Value value) {
-  DCHECK(in_progress_urls_count_ > 0);
-  in_progress_urls_count_--;
+  DCHECK_GT(in_progress_youtube_urls_count_, 0);
+  in_progress_youtube_urls_count_--;
 
-  if (in_progress_urls_count_ == 0)
+  if (in_progress_youtube_urls_count_ == 0)
     ScheduleWebContentsDestroying();
 
   if (!value.is_list()) {

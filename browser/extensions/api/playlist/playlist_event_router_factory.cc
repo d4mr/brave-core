@@ -12,13 +12,11 @@
 #include "base/scoped_observer.h"
 #include "brave/browser/playlist/playlist_service_factory.h"
 #include "brave/common/extensions/api/brave_playlist.h"
-#include "brave/components/playlist/features.h"
 #include "brave/components/playlist/playlist_service.h"
 #include "brave/components/playlist/playlist_service_observer.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
-
 
 namespace OnPlaylistItemStatusChanged =
     extensions::api::brave_playlist::OnPlaylistItemStatusChanged;
@@ -87,14 +85,12 @@ PlaylistEventRouterFactory* PlaylistEventRouterFactory::GetInstance() {
 PlaylistEventRouterFactory::PlaylistEventRouter*
 PlaylistEventRouterFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
+  if (PlaylistServiceFactory::IsPlaylistEnabled(context)) {
     return static_cast<PlaylistEventRouter*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
+        GetInstance()->GetServiceForBrowserContext(context, true));
   }
 
   return nullptr;
-  return static_cast<PlaylistEventRouter*>(
-      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 PlaylistEventRouterFactory::PlaylistEventRouterFactory()

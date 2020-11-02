@@ -5,10 +5,24 @@
 
 #include "brave/browser/ui/webui/playlist_ui.h"
 
+#include "brave/browser/playlist/playlist_service_factory.h"
+#include "brave/common/webui_url_constants.h"
 #include "brave/components/playlist/resources/grit/playlist_generated_map.h"
 #include "components/grit/brave_components_resources.h"
+#include "url/gurl.h"
 
 namespace playlist {
+
+// static
+
+bool PlaylistUI::ShouldBlockPlaylistWebUI(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  if (url.host_piece() != kPlaylistHost)
+    return false;
+
+  return !PlaylistServiceFactory::IsPlaylistEnabled(browser_context);
+}
 
 PlaylistUI::PlaylistUI(content::WebUI* web_ui, const std::string& name)
     : BasicUI(web_ui,

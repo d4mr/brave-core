@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "brave/browser/profiles/profile_util.h"
 #include "brave/components/playlist/features.h"
 #include "brave/components/playlist/playlist_service.h"
 #include "brave/components/playlist/playlist_download_request_manager.h"
@@ -26,12 +27,19 @@ PlaylistServiceFactory* PlaylistServiceFactory::GetInstance() {
 // static
 PlaylistService* PlaylistServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
+  if (IsPlaylistEnabled(context)) {
     return static_cast<PlaylistService*>(
         GetInstance()->GetServiceForBrowserContext(context, true));
   }
 
   return nullptr;
+}
+
+// static
+bool PlaylistServiceFactory::IsPlaylistEnabled(
+    content::BrowserContext* context) {
+  return base::FeatureList::IsEnabled(playlist::features::kPlaylist) &&
+         brave::IsRegularProfile(context);
 }
 
 PlaylistServiceFactory::PlaylistServiceFactory()

@@ -48,7 +48,6 @@
 
 #if BUILDFLAG(ENABLE_PLAYLIST)
 #include "brave/browser/ui/webui/playlist_ui.h"
-#include "brave/components/playlist/features.h"
 #endif
 
 using content::WebUI;
@@ -86,9 +85,7 @@ WebUIController* NewWebUI<BasicUI>(WebUI* web_ui, const GURL& url) {
 #endif  // BUILDFLAG(BRAVE_WALLET_ENABLED)
 #if BUILDFLAG(ENABLE_PLAYLIST)
   } else if (host == kPlaylistHost) {
-    if (base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
-      return new playlist::PlaylistUI(web_ui, url.host());
-    }
+    return new playlist::PlaylistUI(web_ui, url.host());
 #endif  // BUILDFLAG(PLAYLIST_ENABLED)
 #if BUILDFLAG(BRAVE_REWARDS_ENABLED)
   } else if (host == kRewardsPageHost) {
@@ -173,6 +170,10 @@ WebUI::TypeID BraveWebUIControllerFactory::GetWebUIType(
     return WebUI::kNoWebUI;
   }
 #endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_PLAYLIST)
+  if (playlist::PlaylistUI::ShouldBlockPlaylistWebUI(browser_context, url))
+    return WebUI::kNoWebUI;
+#endif
   WebUIFactoryFunction function = GetWebUIFactoryFunction(NULL, url);
   if (function) {
     return reinterpret_cast<WebUI::TypeID>(function);

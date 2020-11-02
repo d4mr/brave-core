@@ -10,10 +10,19 @@
 
 #include "brave/browser/ui/webui/basic_ui.h"
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
+class GURL;
+
 namespace playlist {
 
 class PlaylistUI : public BasicUI {
  public:
+  static bool ShouldBlockPlaylistWebUI(content::BrowserContext* browser_context,
+                                       const GURL& url);
+
   PlaylistUI(content::WebUI* web_ui, const std::string& host);
   ~PlaylistUI() override;
   PlaylistUI(const PlaylistUI&) = delete;
