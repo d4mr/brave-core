@@ -188,7 +188,7 @@ TEST_F(BraveProfileManagerTest, TorProfileDontEndUpAsLastProfile) {
   // Create a browser for the profile.
   Browser::CreateParams profile_params(tor_profile, true);
   std::unique_ptr<Browser> browser(
-      CreateBrowserWithTestWindowForParams(&profile_params));
+      CreateBrowserWithTestWindowForParams(profile_params));
   last_used_profile = profile_manager->GetLastUsedProfile();
   EXPECT_EQ(parent_profile, last_used_profile);
 
