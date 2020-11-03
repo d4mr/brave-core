@@ -93,7 +93,7 @@ class PlaylistBrowserTest : public InProcessBrowserTest,
     called_change_types_.insert(change_params_.change_type);
 
     if (change_params_.change_type ==
-        PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED) {
+        PlaylistChangeParams::ChangeType::kChangeTypeAdded) {
       lastly_added_playlist_id_ = change_params_.playlist_id;
     }
 
@@ -208,11 +208,11 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, CreatePlaylist) {
   service->CreatePlaylistItem(GetValidCreateParams());
   WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAdded));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY));
+      PlaylistChangeParams::ChangeType::kChangeTypeThumbnailReady));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY));
+      PlaylistChangeParams::ChangeType::kChangeTypePlayReady));
 }
 
 IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, CreatePlaylistWithSeparateAudio) {
@@ -223,11 +223,11 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, CreatePlaylistWithSeparateAudio) {
   service->CreatePlaylistItem(GetValidCreateParamsWithSeparateAudio());
   WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAdded));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY));
+      PlaylistChangeParams::ChangeType::kChangeTypeThumbnailReady));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY));
+      PlaylistChangeParams::ChangeType::kChangeTypePlayReady));
 }
 
 IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ThumbnailFailed) {
@@ -238,11 +238,11 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ThumbnailFailed) {
   service->CreatePlaylistItem(GetInvalidCreateParams());
   WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAdded));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_FAILED));
+      PlaylistChangeParams::ChangeType::kChangeTypeThumbnailFailed));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAborted));
 }
 
 IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, MediaDownloadFailed) {
@@ -254,11 +254,11 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, MediaDownloadFailed) {
   service->CreatePlaylistItem(GetValidCreateParamsForIncompleteMediaFileList());
   WaitForEvents(3);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAdded));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY));
+      PlaylistChangeParams::ChangeType::kChangeTypeThumbnailReady));
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAborted));
 }
 
 IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
   service->RecoverPlaylistItem(lastly_added_playlist_id_);
   WaitForEvents(1);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAborted));
 
   // To simulate invalid media file url becomes valid, change media file url.
   // With this, recovery process will get 1 READY notification.
@@ -319,14 +319,14 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
   service->RecoverPlaylistItem(lastly_added_playlist_id_);
   WaitForEvents(1);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY));
+      PlaylistChangeParams::ChangeType::kChangeTypePlayReady));
 
   // When a playlist is deleted, we should get 1 notification: deleted.
   ResetStatus();
   service->DeletePlaylistItem(lastly_added_playlist_id_);
   EXPECT_EQ(1, on_playlist_changed_called_count_);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_DELETED));
+      PlaylistChangeParams::ChangeType::kChangeTypeDeleted));
 
   // After deleting one playlist, total playlist count should be 2.
   ResetStatus();
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(PlaylistBrowserTest, ApiFunctions) {
   service->DeleteAllPlaylistItems();
   EXPECT_EQ(1, on_playlist_changed_called_count_);
   EXPECT_TRUE(IsPlaylistChangeTypeCalled(
-      PlaylistChangeParams::ChangeType::CHANGE_TYPE_ALL_DELETED));
+      PlaylistChangeParams::ChangeType::kChangeTypeAllDeleted));
 
   // After deleting all playlist, total playlist count should be 0.
   ResetStatus();

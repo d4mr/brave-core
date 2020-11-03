@@ -13,21 +13,22 @@ namespace playlist {
 std::string PlaylistChangeParams::GetPlaylistChangeTypeAsString(
     PlaylistChangeParams::ChangeType type) {
   switch (type) {
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED:
+    case PlaylistChangeParams::ChangeType::kChangeTypeAdded:
       return "added";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_DELETED:
+    case PlaylistChangeParams::ChangeType::kChangeTypeDeleted:
       return "deleted";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_ALL_DELETED:
+    case PlaylistChangeParams::ChangeType::kChangeTypeAllDeleted:
       return "all_deleted";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED:
+    case PlaylistChangeParams::ChangeType::kChangeTypeAborted:
       return "aborted";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY:
+    case PlaylistChangeParams::ChangeType::kChangeTypeThumbnailReady:
       return "thumbnail_ready";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_FAILED:
+    case PlaylistChangeParams::ChangeType::kChangeTypeThumbnailFailed:
       return "thumbnail_failed";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY:
+    case PlaylistChangeParams::ChangeType::kChangeTypePlayReady:
       return "play_ready";
-    case PlaylistChangeParams::ChangeType::CHANGE_TYPE_NONE:  // fall through
+    case PlaylistChangeParams::ChangeType::kChangeTypeNone:
+      FALLTHROUGH;
     default:
       NOTREACHED();
       return "unknown";

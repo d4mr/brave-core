@@ -163,7 +163,7 @@ void PlaylistService::CreatePlaylistItem(const CreatePlaylistParams& params) {
   UpdatePlaylistValue(info.id, GetValueFromPlaylistInfo(info));
 
   NotifyPlaylistChanged(
-      {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ADDED, info.id});
+      {PlaylistChangeParams::ChangeType::kChangeTypeAdded, info.id});
 
   base::PostTaskAndReplyWithResult(
       task_runner(),
@@ -179,7 +179,7 @@ void PlaylistService::OnPlaylistItemDirCreated(const std::string& id,
   VLOG(2) << __func__;
   if (!directory_ready) {
     NotifyPlaylistChanged(
-        {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED, id});
+        {PlaylistChangeParams::ChangeType::kChangeTypeAborted, id});
     return;
   }
 
@@ -214,7 +214,7 @@ void PlaylistService::OnThumbnailDownloaded(const std::string& id,
   if (path.empty()) {
     VLOG(2) << __func__ << ": thumbnail fetching failed for " << id;
     NotifyPlaylistChanged(
-        {PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_FAILED, id});
+        {PlaylistChangeParams::ChangeType::kChangeTypeThumbnailFailed, id});
     return;
   }
 
@@ -225,7 +225,7 @@ void PlaylistService::OnThumbnailDownloaded(const std::string& id,
     copied_value.SetStringKey(kPlaylistThumbnailPathKey, path.AsUTF8Unsafe());
     UpdatePlaylistValue(id, std::move(copied_value));
     NotifyPlaylistChanged(
-        {PlaylistChangeParams::ChangeType::CHANGE_TYPE_THUMBNAIL_READY, id});
+        {PlaylistChangeParams::ChangeType::kChangeTypeThumbnailReady, id});
   }
 }
 
@@ -292,7 +292,7 @@ void PlaylistService::DeletePlaylistItem(const std::string& id) {
   RemovePlaylist(id);
 
   NotifyPlaylistChanged(
-      {PlaylistChangeParams::ChangeType::CHANGE_TYPE_DELETED, id});
+      {PlaylistChangeParams::ChangeType::kChangeTypeDeleted, id});
 
   // TODO(simonhong): Delete after getting cancel complete message from all
   // downloader.
@@ -313,7 +313,7 @@ void PlaylistService::DeleteAllPlaylistItems() {
   prefs_->ClearPref(kPlaylistItems);
 
   NotifyPlaylistChanged(
-      {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ALL_DELETED, ""});
+      {PlaylistChangeParams::ChangeType::kChangeTypeAllDeleted, ""});
 
   CleanUp();
 }
@@ -342,7 +342,7 @@ void PlaylistService::OnMediaFileReady(const std::string& id,
   UpdatePlaylistValue(id, std::move(item));
 
   NotifyPlaylistChanged(
-      {PlaylistChangeParams::ChangeType::CHANGE_TYPE_PLAY_READY, id});
+      {PlaylistChangeParams::ChangeType::kChangeTypePlayReady, id});
 
   GenerateIndexHTMLFile(GetPlaylistItemDirPath(id));
 }
@@ -364,7 +364,7 @@ void PlaylistService::OnMediaFileGenerationFailed(const std::string& id) {
 
   thumbnail_downloader_->CancelDownloadRequest(id);
   NotifyPlaylistChanged(
-      {PlaylistChangeParams::ChangeType::CHANGE_TYPE_ABORTED, id});
+      {PlaylistChangeParams::ChangeType::kChangeTypeAborted, id});
 }
 
 bool PlaylistService::IsValidPlaylistItem(const std::string& id) {

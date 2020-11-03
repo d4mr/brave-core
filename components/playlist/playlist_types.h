@@ -13,14 +13,14 @@ namespace playlist {
 
 struct PlaylistChangeParams {
   enum class ChangeType {
-    CHANGE_TYPE_NONE,
-    CHANGE_TYPE_ADDED,               // New playlist added but not ready state
-    CHANGE_TYPE_THUMBNAIL_READY,     // Thumbnail ready to use for playlist
-    CHANGE_TYPE_THUMBNAIL_FAILED,    // Failed to fetch thumbnail
-    CHANGE_TYPE_PLAY_READY,          // Playlist ready to play
-    CHANGE_TYPE_DELETED,             // A playlist deleted
-    CHANGE_TYPE_ALL_DELETED,         // All playlist are deleted
-    CHANGE_TYPE_ABORTED,             // Aborted during the creation process
+    kChangeTypeNone,
+    kChangeTypeAdded,               // New playlist added but not ready state
+    kChangeTypeThumbnailReady,      // Thumbnail ready to use for playlist
+    kChangeTypeThumbnailFailed,     // Failed to fetch thumbnail
+    kChangeTypePlayReady,           // Playlist ready to play
+    kChangeTypeDeleted,             // A playlist deleted
+    kChangeTypeAllDeleted,          // All playlist are deleted
+    kChangeTypeAborted,             // Aborted during the creation process
   };
   static std::string GetPlaylistChangeTypeAsString(
       PlaylistChangeParams::ChangeType type);
@@ -29,7 +29,7 @@ struct PlaylistChangeParams {
   PlaylistChangeParams(ChangeType type, const std::string& id);
   ~PlaylistChangeParams();
 
-  ChangeType change_type = ChangeType::CHANGE_TYPE_NONE;
+  ChangeType change_type = ChangeType::kChangeTypeNone;
   std::string playlist_id;
 };
 
