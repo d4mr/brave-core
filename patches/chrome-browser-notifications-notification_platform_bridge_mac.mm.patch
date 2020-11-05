@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/notifications/notification_platform_bridge_mac.mm b/chrome/browser/notifications/notification_platform_bridge_mac.mm
-index dd2f51af3317447f0df93cf3da993e7816a068c0..801492fcc3ec55bffb18a0c89ff5e18870424407 100644
+index 818a55960feddc8dd86717673f3164388afd9a0d..0bd414094c8c69ee478d56f6bb47e3a59d1f6b97 100644
 --- a/chrome/browser/notifications/notification_platform_bridge_mac.mm
 +++ b/chrome/browser/notifications/notification_platform_bridge_mac.mm
 @@ -92,6 +92,7 @@ bool IsPersistentNotification(
