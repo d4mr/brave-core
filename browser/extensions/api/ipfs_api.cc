@@ -61,12 +61,12 @@ ExtensionFunction::ResponseAction IpfsGetResolveMethodListFunction::Run() {
       ipfs::IPFSResolveMethodTypes::IPFS_DISABLED));
   std::string json_string;
   base::JSONWriter::Write(list, &json_string);
-  return RespondNow(OneArgument(std::make_unique<base::Value>(json_string)));
+  return RespondNow(OneArgument(base::Value(json_string)));
 }
 
 ExtensionFunction::ResponseAction IpfsGetIPFSEnabledFunction::Run() {
   bool enabled = IsIpfsEnabled(browser_context());
-  return RespondNow(OneArgument(std::make_unique<base::Value>(enabled)));
+  return RespondNow(OneArgument(base::Value(enabled)));
 }
 
 ExtensionFunction::ResponseAction IpfsGetResolveMethodTypeFunction::Run() {
@@ -87,7 +87,7 @@ ExtensionFunction::ResponseAction IpfsGetResolveMethodTypeFunction::Run() {
         break;
     }
   }
-  return RespondNow(OneArgument(std::make_unique<base::Value>(value)));
+  return RespondNow(OneArgument(base::Value(value)));
 }
 
 ExtensionFunction::ResponseAction IpfsLaunchFunction::Run() {
@@ -100,7 +100,7 @@ ExtensionFunction::ResponseAction IpfsLaunchFunction::Run() {
 }
 
 void IpfsLaunchFunction::OnLaunch(bool launched) {
-  Respond(OneArgument(std::make_unique<base::Value>(launched)));
+  Respond(OneArgument(base::Value(launched)));
 }
 
 ExtensionFunction::ResponseAction IpfsShutdownFunction::Run() {
@@ -113,7 +113,7 @@ ExtensionFunction::ResponseAction IpfsShutdownFunction::Run() {
 }
 
 void IpfsShutdownFunction::OnShutdown(bool shutdown) {
-  Respond(OneArgument(std::make_unique<base::Value>(shutdown)));
+  Respond(OneArgument(base::Value(shutdown)));
 }
 
 ExtensionFunction::ResponseAction IpfsGetConfigFunction::Run() {
@@ -136,7 +136,7 @@ ExtensionFunction::ResponseAction IpfsGetExecutableAvailableFunction::Run() {
     return RespondNow(Error("IPFS not enabled"));
   }
   bool avail = GetIpfsService(browser_context())->IsIPFSExecutableAvailable();
-  return RespondNow(OneArgument(std::make_unique<base::Value>(avail)));
+  return RespondNow(OneArgument(base::Value(avail)));
 }
 
 }  // namespace api

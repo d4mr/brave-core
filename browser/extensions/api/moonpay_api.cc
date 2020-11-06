@@ -35,8 +35,7 @@ MoonpayIsBitcoinDotComSupportedFunction::Run() {
 
   bool is_supported = ntp_widget_utils::IsRegionSupported(
       profile->GetPrefs(), moonpay::bitcoin_dot_com_supported_regions, true);
-  return RespondNow(OneArgument(
-      std::make_unique<base::Value>(is_supported)));
+  return RespondNow(OneArgument(base::Value(is_supported)));
 }
 
 ExtensionFunction::ResponseAction
@@ -79,9 +78,9 @@ MoonpayGetBitcoinDotComInteractionsFunction::Run() {
   bool has_interacted = profile->GetPrefs()->GetBoolean(
       kMoonpayHasInteractedBitcoinDotCom);
 
-  auto interactions = std::make_unique<base::DictionaryValue>();
-  interactions->SetBoolean("boughtCrypto", has_bought);
-  interactions->SetBoolean("interacted", has_interacted);
+  base::DictionaryValue interactions;
+  interactions.SetBoolean("boughtCrypto", has_bought);
+  interactions.SetBoolean("interacted", has_interacted);
 
   return RespondNow(OneArgument(std::move(interactions)));
 }
