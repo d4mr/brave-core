@@ -20,6 +20,7 @@
 #include "chrome/common/importer/mock_importer_bridge.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/os_crypt/os_crypt_mocker.h"
+#include "components/password_manager/core/browser/password_form.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -144,8 +145,8 @@ TEST_F(ChromeImporterTest, ImportPasswords) {
   // Use mock keychain on mac to prevent blocking permissions dialogs.
   OSCryptMocker::SetUp();
 
-  autofill::PasswordForm autofillable_login;
-  autofill::PasswordForm blocked_login;
+  password_manager::PasswordForm autofillable_login;
+  password_manager::PasswordForm blocked_login;
 
   EXPECT_CALL(*bridge_, NotifyStarted());
   EXPECT_CALL(*bridge_, NotifyItemStarted(importer::PASSWORDS));
