@@ -1,0 +1,12 @@
+diff --git a/content/public/browser/browser_context.h b/content/public/browser/browser_context.h
+index 506ae1b479de9320d7544f57d6cbdf3eb128ab7a..8f7855ea07808850d7fc7964bfe27d38bddb6661 100644
+--- a/content/public/browser/browser_context.h
++++ b/content/public/browser/browser_context.h
+@@ -380,6 +380,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
+   // nullptr if there isn't one.
+   virtual variations::VariationsClient* GetVariationsClient();
+ 
++  BRAVE_BROWSER_CONTEXT_H_
+  private:
+   const std::string unique_id_;
+   bool was_notify_will_be_destroyed_called_ = false;

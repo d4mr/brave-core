@@ -7,8 +7,8 @@
 
 #define BRAVE_ALLOWS_BROWSER_WINDOWS *this == TorID() ||
 
-#define BRAVE_IS_INCOGNITO_PROFILE                                    \
-  if (IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::TorID()) \
+#define BRAVE_IS_INCOGNITO_PROFILE \
+  if (IsTor())                     \
     return true;
 
 #include "../../../../../chrome/browser/profiles/profile.cc"
@@ -16,4 +16,8 @@
 // static
 const Profile::OTRProfileID Profile::OTRProfileID::TorID() {
   return OTRProfileID(tor::kTorProfileID);
+}
+
+bool Profile::IsTor() const {
+  return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::TorID();
 }

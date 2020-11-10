@@ -6,7 +6,11 @@
 #ifndef BRAVE_CHROMIUM_SRC_CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 #define BRAVE_CHROMIUM_SRC_CONTENT_PUBLIC_BROWSER_BROWSER_CONTEXT_H_
 
+#define BRAVE_BROWSER_CONTEXT_H_ \
+  virtual bool IsTor() const;    \
+ private:
 #include "../../../../../content/public/browser/browser_context.h"
+#undef BRAVE_BROWSER_CONTEXT_H_
 
 #include <string>
 

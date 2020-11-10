@@ -7,7 +7,9 @@
 #define BRAVE_CHROMIUM_SRC_CHROME_BROWSER_PROFILES_PROFILE_H_
 
 #define PrimaryID PrimaryID(); static const OTRProfileID TorID
+#define HasPrimaryOTRProfile IsTor() const override; bool HasPrimaryOTRProfile
 #include "../../../../../chrome/browser/profiles/profile.h"
 #undef PrimaryID
+#undef HasPrimaryOTRProfile
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_PROFILES_PROFILE_H_
