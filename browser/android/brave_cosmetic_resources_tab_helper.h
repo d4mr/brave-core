@@ -6,12 +6,16 @@
 #ifndef BRAVE_BROWSER_ANDROID_BRAVE_COSMETIC_RESOURCES_TAB_HELPER_H_
 #define BRAVE_BROWSER_ANDROID_BRAVE_COSMETIC_RESOURCES_TAB_HELPER_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
+#include "brave/content/browser/cosmetic_filters_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class BraveCosmeticResourcesTabHelper
-    : public content::WebContentsObserver,
+    : public content::CosmeticFiltersObserver,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<BraveCosmeticResourcesTabHelper>,
       public base::SupportsWeakPtr<BraveCosmeticResourcesTabHelper> {
  public:
@@ -25,12 +29,42 @@ class BraveCosmeticResourcesTabHelper
       content::RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info) override;
+  bool OnMessageReceived(const IPC::Message& message,
+      content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
+  //
+
+  // content::CosmeticFiltersObserver overrides:
+  void HiddenClassIdSelectors(content::RenderFrameHost* render_frame_host,
+      const std::vector<std::string>& classes,
+      const std::vector<std::string>& ids) override;
+  //
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
  private:
-  void ProcessURL(content::WebContents* contents,
-      content::RenderFrameHost* render_frame_host, const GURL& url);
+  void ProcessURL(content::RenderFrameHost* render_frame_host, const GURL& url,
+      const bool& main_frame);
+
+  std::unique_ptr<base::ListValue> GetUrlCosmeticResourcesOnTaskRunner(
+      const std::string& url);
+  void GetUrlCosmeticResourcesOnUI(content::RenderFrameHost* render_frame_host,
+      const std::string& url, bool main_frame,
+      std::unique_ptr<base::ListValue> resources);
+  void CSSRulesRoutine(const std::string& url,
+      base::DictionaryValue* resources_dict,
+      content::RenderFrameHost* render_frame_host);
+
+  std::unique_ptr<base::ListValue> GetHiddenClassIdSelectorsOnTaskRunner(
+      const std::vector<std::string>& classes,
+      const std::vector<std::string>& ids);
+  void GetHiddenClassIdSelectorsOnUI(
+      content::RenderFrameHost* render_frame_host,
+      std::unique_ptr<base::ListValue> selectors);
+
+  std::vector<std::string> exceptions_;
+  bool enabled_1st_party_cf_filtering_;
+
   DISALLOW_COPY_AND_ASSIGN(BraveCosmeticResourcesTabHelper);
 };
 
