@@ -50,7 +50,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRIVATE_CHANNEL)
-#include "brave/components/private_channel/browser/private_channel.h"
+#include "brave/components/private_channel/browser/private_channel_service.h"
 #endif
 
 // Fetch headers from the referral server once a day.
