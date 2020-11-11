@@ -33,6 +33,10 @@ namespace behavioral {
 class PurchaseIntentClassifier;
 }  // namespace behavioral
 
+namespace baseline {
+class BaselineClassifier;
+}  // namespace baseline
+
 namespace geographic {
 class SubdivisionTargeting;
 }  // namespace geographic
@@ -108,6 +112,11 @@ class AdsImpl
 
   AdsHistory* get_ads_history() const {
     return ads_history_.get();
+  }
+
+  ad_targeting::baseline::BaselineClassifier*
+  get_baseline_classifier() const {
+    return baseline_classifier_.get();
   }
 
   Bundle* get_bundle() const {
@@ -300,6 +309,8 @@ class AdsImpl
   std::unique_ptr<ad_notifications::AdServing> ad_notification_serving_;
   std::unique_ptr<AdTargeting> ad_targeting_;
   std::unique_ptr<AdTransfer> ad_transfer_;
+  std::unique_ptr<ad_targeting::baseline::BaselineClassifier>
+      baseline_classifier_;
   std::unique_ptr<Bundle> bundle_;
   std::unique_ptr<Client> client_;
   std::unique_ptr<Confirmations> confirmations_;
