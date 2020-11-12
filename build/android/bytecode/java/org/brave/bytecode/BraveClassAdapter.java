@@ -28,6 +28,7 @@ public class BraveClassAdapter {
         chain = new BraveTabSwitcherModeTTPhoneClassAdapter(chain);
         chain = new BraveToolbarLayoutClassAdapter(chain);
         chain = new BraveTileViewClassAdapter(chain);
+        chain = new BraveActivityClassAdapter(chain);
         return chain;
     }
 }

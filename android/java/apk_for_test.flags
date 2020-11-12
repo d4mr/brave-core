@@ -122,3 +122,7 @@
     *** updateNewTabButtonVisibility(...);
     *** shouldShowIncognitoToggle(...);
 }
+
+-keep class org.chromium.chrome.browser.app.ChromeActivity {
+    *** mTabModelProfileSupplier;
+}

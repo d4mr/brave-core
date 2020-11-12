@@ -54,6 +54,7 @@ public class BytecodeTest {
                 "org/chromium/chrome/browser/customtabs/features/toolbar/CustomTabToolbar"));
         Assert.assertTrue(
                 classExists("org/chromium/chrome/browser/suggestions/tile/SuggestionsTileView"));
+        Assert.assertTrue(classExists("org/chromium/chrome/browser/app/ChromeActivity"));
     }
 
     @Test
@@ -197,6 +198,8 @@ public class BytecodeTest {
         Assert.assertTrue(
                 fieldExists("org/chromium/chrome/browser/toolbar/top/TabSwitcherModeTTPhone",
                         "mShouldShowNewTabVariation"));
+        Assert.assertTrue(fieldExists(
+                "org/chromium/chrome/browser/app/ChromeActivity", "mTabModelProfileSupplier"));
     }
 
     private boolean classExists(String className) {
