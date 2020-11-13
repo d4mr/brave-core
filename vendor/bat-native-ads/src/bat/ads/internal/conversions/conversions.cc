@@ -16,9 +16,9 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "brave_base/random.h"
+#include "bat/ads/ads.h"
 #include "bat/ads/internal/ad_events/ad_events.h"
-#include "bat/ads/internal/ads_impl.h"
-#include "bat/ads/internal/confirmations/confirmations.h"
+#include "bat/ads/internal/ads_client_helper.h"
 #include "bat/ads/internal/conversions/sorts/conversions_sort_factory.h"
 #include "bat/ads/internal/database/tables/conversions_database_table.h"
 #include "bat/ads/internal/database/tables/ad_events_database_table.h"
@@ -28,9 +28,6 @@
 #include "bat/ads/pref_names.h"
 
 namespace ads {
-
-using std::placeholders::_1;
-using std::placeholders::_2;
 
 namespace {
 
@@ -63,14 +60,19 @@ bool HasObservationWindowForAdEventExpired(
 
 }  // namespace
 
-Conversions::Conversions(
-    AdsImpl* ads)
-    : is_initialized_(false),
-      ads_(ads) {
-  DCHECK(ads_);
-}
+Conversions::Conversions() = default;
 
 Conversions::~Conversions() = default;
+
+void Conversions::AddObserver(
+    ConversionsObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Conversions::RemoveObserver(
+    ConversionsObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
 
 void Conversions::Initialize(
     InitializeCallback callback) {
@@ -115,7 +117,7 @@ void Conversions::StartTimerIfReady() {
 ///////////////////////////////////////////////////////////////////////////////
 
 bool Conversions::ShouldAllow() const {
-  return ads_->get_ads_client()->GetBooleanPref(
+  return AdsClientHelper::Get()->GetBooleanPref(
       prefs::kShouldAllowConversionTracking);
 }
 
@@ -123,7 +125,7 @@ void Conversions::CheckUrl(
     const std::string& url) {
   BLOG(1, "Checking URL for conversions");
 
-  database::table::AdEvents ad_events_database_table(ads_);
+  database::table::AdEvents ad_events_database_table;
   ad_events_database_table.GetAll([=](
       const Result result,
       const AdEventList& ad_events) {
@@ -132,7 +134,7 @@ void Conversions::CheckUrl(
       return;
     }
 
-    database::table::Conversions conversions_database_table(ads_);
+    database::table::Conversions conversions_database_table;
     conversions_database_table.GetAll([=](
         const Result result,
         const ConversionList& conversions) {
@@ -263,8 +265,7 @@ void Conversions::AddItemToQueue(
       static_cast<int64_t>(base::Time::Now().ToDoubleT());
   conversion_ad_event.confirmation_type = ConfirmationType::kConversion;
 
-  AdEvents ad_events(ads_);
-  ad_events.Log(conversion_ad_event, [](
+  LogAdEvent(conversion_ad_event, [](
       const Result result) {
     if (result != Result::SUCCESS) {
       BLOG(1, "Failed to log conversion event");
@@ -323,20 +324,21 @@ void Conversions::ProcessQueueItem(
   const std::string friendly_date_and_time =
       FriendlyDateAndTime(queue_item.timestamp_in_seconds);
 
+  const std::string creative_set_id = queue_item.creative_set_id;
+  const std::string creative_instance_id = queue_item.creative_instance_id;
+
   if (!queue_item.IsValid()) {
     BLOG(1, "Failed to convert ad with creative instance id "
-        << queue_item.creative_instance_id << " and creative set id "
-            << queue_item.creative_set_id << " " << friendly_date_and_time);
-  } else {
-    const std::string creative_set_id = queue_item.creative_set_id;
-    const std::string creative_instance_id = queue_item.creative_instance_id;
+        << creative_instance_id << " and creative set id " << creative_set_id
+            << " " << friendly_date_and_time);
 
+    NotifyConversionFailed(creative_instance_id);
+  } else {
     BLOG(1, "Successfully converted ad with creative instance id "
         << creative_instance_id << " and creative set id " << creative_set_id
             << " " << friendly_date_and_time);
 
-    ads_->get_confirmations()->ConfirmAd(creative_instance_id,
-        ConfirmationType::kConversion);
+    NotifyConversion(creative_instance_id);
   }
 
   RemoveItemFromQueue(queue_item.creative_instance_id);
@@ -387,8 +389,8 @@ void Conversions::Save() {
   BLOG(9, "Saving conversions state");
 
   std::string json = ToJson();
-  auto callback = std::bind(&Conversions::OnSaved, this, _1);
-  ads_->get_ads_client()->Save(kConversionsFilename, json, callback);
+  auto callback = std::bind(&Conversions::OnSaved, this, std::placeholders::_1);
+  AdsClientHelper::Get()->Save(kConversionsFilename, json, callback);
 }
 
 void Conversions::OnSaved(
@@ -436,8 +438,9 @@ base::Value Conversions::GetAsList() {
 void Conversions::Load() {
   BLOG(3, "Loading conversions state");
 
-  auto callback = std::bind(&Conversions::OnLoaded, this, _1, _2);
-  ads_->get_ads_client()->Load(kConversionsFilename, callback);
+  auto callback = std::bind(&Conversions::OnLoaded, this,
+      std::placeholders::_1, std::placeholders::_2);
+  AdsClientHelper::Get()->Load(kConversionsFilename, callback);
 }
 
 void Conversions::OnLoaded(
@@ -573,6 +576,20 @@ bool Conversions::GetFromDictionary(
   *info = queue_item;
 
   return true;
+}
+
+void Conversions::NotifyConversion(
+    const std::string& creative_instance_id) {
+  for (ConversionsObserver& observer : observers_) {
+    observer.OnConversion(creative_instance_id);
+  }
+}
+
+void Conversions::NotifyConversionFailed(
+    const std::string& creative_instance_id) {
+  for (ConversionsObserver& observer : observers_) {
+    observer.OnConversionFailed(creative_instance_id);
+  }
 }
 
 }  // namespace ads

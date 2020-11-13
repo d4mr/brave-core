@@ -10,7 +10,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "bat/ads/internal/ads_impl.h"
+#include "bat/ads/internal/ads_client_helper.h"
 #include "bat/ads/internal/container_util.h"
 #include "bat/ads/internal/database/database_statement_util.h"
 #include "bat/ads/internal/database/database_table_util.h"
@@ -22,8 +22,6 @@ namespace ads {
 namespace database {
 namespace table {
 
-using std::placeholders::_1;
-
 namespace {
 
 const char kTableName[] = "creative_ad_notifications";
@@ -32,16 +30,13 @@ const int kDefaultBatchSize = 50;
 
 }  // namespace
 
-CreativeAdNotifications::CreativeAdNotifications(
-    AdsImpl* ads)
+CreativeAdNotifications::CreativeAdNotifications()
     : batch_size_(kDefaultBatchSize),
-      ads_(ads),
-      campaigns_database_table_(std::make_unique<Campaigns>(ads_)),
-      categories_database_table_(std::make_unique<Categories>(ads_)),
-      creative_ads_database_table_(std::make_unique<CreativeAds>(ads_)),
-      dayparts_database_table_(std::make_unique<Dayparts>(ads_)),
-      geo_targets_database_table_(std::make_unique<GeoTargets>(ads_)) {
-  DCHECK(ads_);
+      campaigns_database_table_(std::make_unique<Campaigns>()),
+      categories_database_table_(std::make_unique<Categories>()),
+      creative_ads_database_table_(std::make_unique<CreativeAds>()),
+      dayparts_database_table_(std::make_unique<Dayparts>()),
+      geo_targets_database_table_(std::make_unique<GeoTargets>()) {
 }
 
 CreativeAdNotifications::~CreativeAdNotifications() = default;
@@ -74,8 +69,8 @@ void CreativeAdNotifications::Save(
         transaction.get(), creative_ads);
   }
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&OnResultCallback, _1, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&OnResultCallback, std::placeholders::_1, callback));
 }
 
 void CreativeAdNotifications::Delete(
@@ -84,8 +79,8 @@ void CreativeAdNotifications::Delete(
 
   util::Delete(transaction.get(), get_table_name());
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&OnResultCallback, _1, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&OnResultCallback, std::placeholders::_1, callback));
 }
 
 void CreativeAdNotifications::GetForCategories(
@@ -171,9 +166,9 @@ void CreativeAdNotifications::GetForCategories(
   DBTransactionPtr transaction = DBTransaction::New();
   transaction->commands.push_back(std::move(command));
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&CreativeAdNotifications::OnGetForCategories, this, _1,
-          categories, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&CreativeAdNotifications::OnGetForCategories, this,
+          std::placeholders::_1, categories, callback));
 }
 
 void CreativeAdNotifications::GetAll(
@@ -245,8 +240,9 @@ void CreativeAdNotifications::GetAll(
   DBTransactionPtr transaction = DBTransaction::New();
   transaction->commands.push_back(std::move(command));
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&CreativeAdNotifications::OnGetAll, this, _1, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&CreativeAdNotifications::OnGetAll, this,
+          std::placeholders::_1, callback));
 }
 
 void CreativeAdNotifications::set_batch_size(

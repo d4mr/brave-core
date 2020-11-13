@@ -26,17 +26,19 @@
 
 namespace ads {
 
-class AdsImpl;
 struct AdContentInfo;
 struct AdHistoryInfo;
 struct CategoryContentInfo;
 
 class Client {
  public:
-  explicit Client(
-      AdsImpl* ads);
+  Client();
 
   ~Client();
+
+  static Client* Get();
+
+  static bool HasInstance();
 
   void Initialize(
       InitializeCallback callback);
@@ -105,7 +107,7 @@ class Client {
   void RemoveAllHistory();
 
  private:
-  bool is_initialized_;
+  bool is_initialized_ = false;
 
   InitializeCallback callback_;
 
@@ -116,8 +118,6 @@ class Client {
   void OnLoaded(const Result result, const std::string& json);
 
   bool FromJson(const std::string& json);
-
-  AdsImpl* ads_;  // NOT OWNED
 
   std::unique_ptr<ClientInfo> client_;
 };

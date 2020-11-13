@@ -20,21 +20,14 @@
 #include "bat/ads/new_tab_page_ad_info.h"
 
 namespace ads {
+namespace history {
 
-AdsHistory::AdsHistory(
-    AdsImpl* ads)
-    : ads_(ads) {
-  DCHECK(ads_);
-}
-
-AdsHistory::~AdsHistory() = default;
-
-AdsHistoryInfo AdsHistory::Get(
+AdsHistoryInfo Get(
     const AdsHistoryInfo::FilterType filter_type,
     const AdsHistoryInfo::SortType sort_type,
     const uint64_t from_timestamp,
-    const uint64_t to_timestamp) const {
-  std::deque<AdHistoryInfo> ads_history = ads_->get_client()->GetAdsHistory();
+    const uint64_t to_timestamp) {
+  std::deque<AdHistoryInfo> ads_history = Client::Get()->GetAdsHistory();
 
   const auto date_range_filter = std::make_unique<AdsHistoryDateRangeFilter>();
   if (date_range_filter) {
@@ -60,7 +53,7 @@ AdsHistoryInfo AdsHistory::Get(
   return normalized_ads_history;
 }
 
-void AdsHistory::AddAdNotification(
+void AddAdNotification(
     const AdNotificationInfo& ad,
     const ConfirmationType& confirmation_type) {
   AdHistoryInfo ad_history;
@@ -79,10 +72,10 @@ void AdsHistory::AddAdNotification(
   ad_history.ad_content.ad_action = confirmation_type;
   ad_history.category_content.category = ad.category;
 
-  ads_->get_client()->AppendAdHistoryToAdsHistory(ad_history);
+  Client::Get()->AppendAdHistoryToAdsHistory(ad_history);
 }
 
-void AdsHistory::AddNewTabPageAd(
+void AddNewTabPageAd(
     const NewTabPageAdInfo& ad,
     const ConfirmationType& confirmation_type) {
   AdHistoryInfo ad_history;
@@ -101,7 +94,8 @@ void AdsHistory::AddNewTabPageAd(
   ad_history.ad_content.ad_action = confirmation_type;
   ad_history.category_content.category = ad.category;
 
-  ads_->get_client()->AppendAdHistoryToAdsHistory(ad_history);
+  Client::Get()->AppendAdHistoryToAdsHistory(ad_history);
 }
 
+}  // namespace history
 }  // namespace ads

@@ -12,9 +12,9 @@
 
 #include "brave_base/random.h"
 #include "net/http/http_status_code.h"
-#include "bat/ads/internal/account/transactions.h"
-#include "bat/ads/internal/ad_rewards/ad_rewards.h"
-#include "bat/ads/internal/ads_impl.h"
+#include "bat/ads/ads.h"
+#include "bat/ads/internal/ads_client_helper.h"
+#include "bat/ads/internal/confirmations/confirmations_state.h"
 #include "bat/ads/internal/confirmations/confirmations.h"
 #include "bat/ads/internal/logging.h"
 #include "bat/ads/internal/privacy/unblinded_tokens/unblinded_tokens.h"
@@ -24,31 +24,23 @@
 
 namespace ads {
 
-using std::placeholders::_1;
-
 namespace {
 
-const uint64_t kRetryAfterSeconds = 1 * base::Time::kSecondsPerMinute;
+const int64_t kRetryAfterSeconds = 1 * base::Time::kSecondsPerMinute;
 
-const uint64_t kNextTokenRedemptionAfterSeconds =
+const int64_t kNextTokenRedemptionAfterSeconds =
     24 * base::Time::kSecondsPerHour;
-const uint64_t kDebugNextTokenRedemptionAfterSeconds =
+const int64_t kDebugNextTokenRedemptionAfterSeconds =
     25 * base::Time::kSecondsPerMinute;
 
 }  // namespace
 
-RedeemUnblindedPaymentTokens::RedeemUnblindedPaymentTokens(
-    AdsImpl* ads)
-    : ads_(ads) {
-  DCHECK(ads_);
-}
+RedeemUnblindedPaymentTokens::RedeemUnblindedPaymentTokens() = default;
 
 RedeemUnblindedPaymentTokens::~RedeemUnblindedPaymentTokens() = default;
 
 void RedeemUnblindedPaymentTokens::set_delegate(
     RedeemUnblindedPaymentTokensDelegate* delegate) {
-  DCHECK(delegate);
-
   delegate_ = delegate;
 }
 
@@ -81,7 +73,7 @@ void RedeemUnblindedPaymentTokens::Redeem() {
 
   BLOG(1, "RedeemUnblindedPaymentTokens");
 
-  if (ads_->get_confirmations()->get_unblinded_payment_tokens()->IsEmpty()) {
+  if (ConfirmationsState::Get()->get_unblinded_payment_tokens()->IsEmpty()) {
     BLOG(1, "No unblinded payment tokens to redeem");
     ScheduleNextTokenRedemption();
     return;
@@ -92,15 +84,17 @@ void RedeemUnblindedPaymentTokens::Redeem() {
   is_processing_ = true;
 
   const privacy::UnblindedTokenList unblinded_tokens =
-      ads_->get_confirmations()->get_unblinded_payment_tokens()->GetAllTokens();
+      ConfirmationsState::Get()->get_unblinded_payment_tokens()->GetAllTokens();
+
   RedeemUnblindedPaymentTokensUrlRequestBuilder
       url_request_builder(wallet_, unblinded_tokens);
   UrlRequestPtr url_request = url_request_builder.Build();
   BLOG(5, UrlRequestToString(url_request));
   BLOG(7, UrlRequestHeadersToString(url_request));
 
-  auto callback = std::bind(&RedeemUnblindedPaymentTokens::OnRedeem, this, _1);
-  ads_->get_ads_client()->UrlRequest(std::move(url_request), callback);
+  auto callback = std::bind(&RedeemUnblindedPaymentTokens::OnRedeem, this,
+      std::placeholders::_1);
+  AdsClientHelper::Get()->UrlRequest(std::move(url_request), callback);
 }
 
 void RedeemUnblindedPaymentTokens::OnRedeem(
@@ -129,30 +123,26 @@ void RedeemUnblindedPaymentTokens::OnRedeemUnblindedPaymentTokens(
     }
 
     Retry();
+
     return;
   }
 
-  Transactions transactions(ads_);
-  const TransactionList uncleared_transactions = transactions.GetUncleared();
-  ads_->get_ad_rewards()->SetUnreconciledTransactions(uncleared_transactions);
-
-  ads_->get_confirmations()->get_unblinded_payment_tokens()->RemoveAllTokens();
-
   retry_timer_.Stop();
-
-  ScheduleNextTokenRedemption();
 
   if (delegate_) {
     delegate_->OnDidRedeemUnblindedPaymentTokens();
   }
+
+  ScheduleNextTokenRedemption();
 }
 
 void RedeemUnblindedPaymentTokens::ScheduleNextTokenRedemption() {
   const base::Time next_token_redemption_date =
       CalculateNextTokenRedemptionDate();
 
-  ads_->get_confirmations()->set_next_token_redemption_date(
+  ConfirmationsState::Get()->set_next_token_redemption_date(
       next_token_redemption_date);
+  ConfirmationsState::Get()->Save();
 
   MaybeRedeemAfterDelay(wallet_);
 }
@@ -177,13 +167,14 @@ void RedeemUnblindedPaymentTokens::OnRetry() {
 
 base::TimeDelta RedeemUnblindedPaymentTokens::CalculateTokenRedemptionDelay() {
   base::Time next_token_redemption_date =
-      ads_->get_confirmations()->get_next_token_redemption_date();
+      ConfirmationsState::Get()->get_next_token_redemption_date();
 
   if (next_token_redemption_date.is_null()) {
     next_token_redemption_date = CalculateNextTokenRedemptionDate();
 
-    ads_->get_confirmations()->set_next_token_redemption_date(
+    ConfirmationsState::Get()->set_next_token_redemption_date(
         next_token_redemption_date);
+    ConfirmationsState::Get()->Save();
   }
 
   const base::Time now = base::Time::Now();

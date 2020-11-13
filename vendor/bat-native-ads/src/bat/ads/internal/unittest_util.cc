@@ -19,13 +19,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "brave/base/containers/utils.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 #include "bat/ads/internal/ads_client_mock.h"
-#include "bat/ads/internal/time_util.h"
 #include "bat/ads/internal/url_util.h"
 #include "bat/ads/pref_names.h"
 
@@ -399,14 +399,23 @@ void MockClearPref(
 
 void MockDefaultPrefs(
     const std::unique_ptr<AdsClientMock>& mock) {
-  mock->SetUint64Pref(prefs::kAdsPerDay, 20);
-  mock->SetUint64Pref(prefs::kAdsPerHour, 2);
   mock->SetBooleanPref(prefs::kEnabled, true);
+
+  mock->SetUint64Pref(prefs::kAdsPerHour, 2);
+  mock->SetUint64Pref(prefs::kAdsPerDay, 20);
+
+  mock->SetIntegerPref(prefs::kIdleThreshold, 15);
+
   mock->SetBooleanPref(prefs::kShouldAllowConversionTracking, true);
+
   mock->SetBooleanPref(prefs::kShouldAllowAdsSubdivisionTargeting, false);
   mock->SetStringPref(prefs::kAdsSubdivisionTargetingCode, "AUTO");
   mock->SetStringPref(prefs::kAutoDetectedAdsSubdivisionTargetingCode, "");
-  mock->SetIntegerPref(prefs::kIdleThreshold, 15);
+
+  mock->SetStringPref(prefs::kCatalogId, "");
+  mock->SetIntegerPref(prefs::kCatalogVersion, 1);
+  mock->SetInt64Pref(prefs::kCatalogPing, 7200000);
+  mock->SetInt64Pref(prefs::kCatalogLastUpdated, DistantPast());
 }
 
 }  // namespace
@@ -443,6 +452,13 @@ void SetBuildChannel(
     const std::string& name) {
   _build_channel.is_release = is_release;
   _build_channel.name = name;
+}
+
+void MockLocaleHelper(
+    const std::unique_ptr<brave_l10n::LocaleHelperMock>& mock,
+    const std::string& locale) {
+  ON_CALL(*mock, GetLocale())
+      .WillByDefault(Return(locale));
 }
 
 void MockPlatformHelper(
@@ -506,11 +522,34 @@ void MockIsNetworkConnectionAvailable(
       .WillByDefault(Return(is_available));
 }
 
+void MockIsForeground(
+    const std::unique_ptr<AdsClientMock>& mock,
+    const bool is_foreground) {
+  ON_CALL(*mock, IsForeground())
+      .WillByDefault(Return(is_foreground));
+}
+
 void MockShouldShowNotifications(
     const std::unique_ptr<AdsClientMock>& mock,
     const bool should_show) {
   ON_CALL(*mock, ShouldShowNotifications())
       .WillByDefault(Return(should_show));
+}
+
+void MockShowNotification(
+    const std::unique_ptr<AdsClientMock>& mock) {
+  ON_CALL(*mock, ShowNotification(_))
+      .WillByDefault(Invoke([](
+          const AdNotificationInfo& ad_notification) {
+      }));
+}
+
+void MockCloseNotification(
+    const std::unique_ptr<AdsClientMock>& mock) {
+  ON_CALL(*mock, CloseNotification(_))
+      .WillByDefault(Invoke([](
+          const std::string& uuid) {
+      }));
 }
 
 void MockSave(
@@ -665,8 +704,24 @@ void MockPrefs(
   MockDefaultPrefs(mock);
 }
 
+base::Time TimeFromDateString(
+    const std::string& date) {
+  const std::string utc_date = date + " 23:59:59.999 +00:00";
+
+  base::Time time;
+  if (!base::Time::FromString(utc_date.c_str(), &time)) {
+    return base::Time();
+  }
+
+  return time;
+}
+
 int64_t DistantPast() {
   return 0;  // Thursday, 1 January 1970 00:00:00 UTC
+}
+
+int64_t Now() {
+  return static_cast<int64_t>(base::Time::Now().ToDoubleT());
 }
 
 int64_t DistantFuture() {

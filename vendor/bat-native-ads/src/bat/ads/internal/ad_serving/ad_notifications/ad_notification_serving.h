@@ -15,8 +15,13 @@
 
 namespace ads {
 
-class AdsImpl;
 struct AdNotificationInfo;
+
+namespace ad_targeting {
+namespace geographic {
+class SubdivisionTargeting;
+}  // namespace geographic
+}  // namespace ad_targeting
 
 namespace ad_notifications {
 
@@ -26,7 +31,8 @@ using MaybeServeAdForCategoriesCallback =
 class AdServing {
  public:
   AdServing(
-      AdsImpl* ads);
+      AdTargeting* ad_targeting,
+      ad_targeting::geographic::SubdivisionTargeting* subdivision_targeting);
 
   ~AdServing();
 
@@ -97,7 +103,10 @@ class AdServing {
 
   CreativeAdInfo last_delivered_creative_ad_;
 
-  AdsImpl* ads_;  // NOT OWNED
+  AdTargeting* ad_targeting_;  // NOT OWNED
+
+  ad_targeting::geographic::SubdivisionTargeting*
+      subdivision_targeting_;  // NOT OWNED
 };
 
 }  // namespace ad_notifications

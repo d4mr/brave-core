@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "bat/ads/internal/ads_impl.h"
+#include "bat/ads/internal/ads_client_helper.h"
 #include "bat/ads/internal/database/database_statement_util.h"
 #include "bat/ads/internal/database/database_table_util.h"
 #include "bat/ads/internal/database/database_util.h"
@@ -20,17 +20,11 @@ namespace ads {
 namespace database {
 namespace table {
 
-using std::placeholders::_1;
-
 namespace {
 const char kTableName[] = "ad_conversions";
 }  // namespace
 
-Conversions::Conversions(
-    AdsImpl* ads)
-    : ads_(ads) {
-  DCHECK(ads_);
-}
+Conversions::Conversions() = default;
 
 Conversions::~Conversions() = default;
 
@@ -46,8 +40,8 @@ void Conversions::Save(
 
   InsertOrUpdate(transaction.get(), conversions);
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&OnResultCallback, _1, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&OnResultCallback, std::placeholders::_1, callback));
 }
 
 void Conversions::GetAll(
@@ -79,8 +73,9 @@ void Conversions::GetAll(
   DBTransactionPtr transaction = DBTransaction::New();
   transaction->commands.push_back(std::move(command));
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&Conversions::OnGetConversions, this, _1, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&Conversions::OnGetConversions, this, std::placeholders::_1,
+          callback));
 }
 
 void Conversions::PurgeExpired(
@@ -99,8 +94,8 @@ void Conversions::PurgeExpired(
 
   transaction->commands.push_back(std::move(command));
 
-  ads_->get_ads_client()->RunDBTransaction(std::move(transaction),
-      std::bind(&OnResultCallback, _1, callback));
+  AdsClientHelper::Get()->RunDBTransaction(std::move(transaction),
+      std::bind(&OnResultCallback, std::placeholders::_1, callback));
 }
 
 std::string Conversions::get_table_name() const {
