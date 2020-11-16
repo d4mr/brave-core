@@ -15,7 +15,7 @@ index 4f8182d209673801407db8955c370a026511deed..55361a1022b7cb2b683c336894834b20
    for (auto type : kContentSettingImageOrder)
      result.push_back(CreateForContentType(type));
 +#if defined(BRAVE_CHROMIUM_BUILD)
-+  BraveGenerateContentSettingImageModels(result);
++  BraveGenerateContentSettingImageModels(&result);
 +#endif
  
    return result;

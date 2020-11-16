@@ -8,4 +8,4 @@
 class ContentSettingImageModel;
 
 void BraveGenerateContentSettingImageModels(
-    std::vector<std::unique_ptr<ContentSettingImageModel>>&);
+    std::vector<std::unique_ptr<ContentSettingImageModel>>*);
