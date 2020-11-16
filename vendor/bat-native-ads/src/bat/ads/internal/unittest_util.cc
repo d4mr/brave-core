@@ -10,6 +10,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -19,7 +20,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "brave/base/containers/utils.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -589,7 +589,7 @@ void MockUrlRequest(
 
         std::string body;
 
-        const std::map<std::string, std::string> headers_as_map =
+        const base::flat_map<std::string, std::string> headers_as_map =
             HeadersToMap(url_request->headers);
 
         URLEndpointResponse url_endpoint_response;
@@ -616,7 +616,7 @@ void MockUrlRequest(
         url_response.url = url_request->url;
         url_response.status_code = status_code;
         url_response.body = body;
-        url_response.headers = base::MapToFlatMap(headers_as_map);
+        url_response.headers = headers_as_map;
         callback(url_response);
       }));
 }

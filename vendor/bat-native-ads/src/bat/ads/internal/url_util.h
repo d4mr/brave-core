@@ -6,9 +6,10 @@
 #ifndef BAT_ADS_INTERNAL_URL_UTIL_H_
 #define BAT_ADS_INTERNAL_URL_UTIL_H_
 
-#include <map>
 #include <string>
 #include <vector>
+
+#include "base/containers/flat_map.h"
 
 namespace ads {
 
@@ -26,7 +27,7 @@ bool SameSite(
     const std::string& url1,
     const std::string& url2);
 
-std::map<std::string, std::string> HeadersToMap(
+base::flat_map<std::string, std::string> HeadersToMap(
     const std::vector<std::string>& headers);
 
 }  // namespace ads

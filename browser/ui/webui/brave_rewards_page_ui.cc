@@ -11,8 +11,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
 
+#include "base/containers/flat_map.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -161,7 +161,7 @@ class RewardsDOMHandler : public WebUIMessageHandler,
     const ledger::type::Result result,
     const std::string& wallet_type,
     const std::string& action,
-    const std::map<std::string, std::string>& args);
+    const base::flat_map<std::string, std::string>& args);
 
   void DisconnectWallet(const base::ListValue* args);
 
@@ -1603,7 +1603,7 @@ void RewardsDOMHandler::OnProcessRewardsPageUrl(
     const ledger::type::Result result,
     const std::string& wallet_type,
     const std::string& action,
-    const std::map<std::string, std::string>& args) {
+    const base::flat_map<std::string, std::string>& args) {
   if (!web_ui()->CanCallJavascript()) {
     return;
   }

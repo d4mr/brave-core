@@ -53,9 +53,9 @@ bool SameSite(
       GURL(url2), net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
-std::map<std::string, std::string> HeadersToMap(
+base::flat_map<std::string, std::string> HeadersToMap(
     const std::vector<std::string>& headers) {
-  std::map<std::string, std::string> normalized_headers;
+  base::flat_map<std::string, std::string> normalized_headers;
 
   for (const auto& header : headers) {
     const std::vector<std::string> components = base::SplitString(header,
