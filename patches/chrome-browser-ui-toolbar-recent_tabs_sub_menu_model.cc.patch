@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.cc b/chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.cc
+index 8cdfc6fbdddcb13bcd5e198cd6ebf53abfb0269d..d9102ed0aedb4d7c5561438715ec4fa277fc3cde 100644
+--- a/chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.cc
++++ b/chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.cc
+@@ -270,6 +270,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
+     const TabNavigationItem& item = (*tab_items)[tab_items_idx];
+     DCHECK(item.tab_id.is_valid() && item.url.is_valid());
+ 
++    BRAVE_EXECUTE_COMMAND
+     if (item.session_tag.empty()) {  // Restore tab of local session.
+       if (service && context) {
+         base::RecordAction(
+@@ -479,6 +480,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
+       BuildOtherDevicesTabItem(session_tag, *tabs_in_session[k]);
+     }  // for all tabs in one session
+ 
++    BRAVE_BUILD_TABS_FROM_OTHER_DEVICES
+     ++num_sessions_added;
+   }  // for all sessions
+ 
